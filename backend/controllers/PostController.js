@@ -39,6 +39,7 @@ const getAllPosts = async (req, res) => {
 const createPost = async (req, res) => {
   const { content, description, image } = req.body;
   const { id } = req.user;
+  console.log(id)
   const currentUser = await UserModel.findById(id);
   if (!currentUser) {
     res.status = 400;
@@ -48,7 +49,8 @@ const createPost = async (req, res) => {
     content,
     description,
     image,
-    user: id
+    user: id,
+    
   })
   console.log(newPost._id)
 
@@ -62,46 +64,61 @@ const createPost = async (req, res) => {
 // upload image
 const uploadsImage = async (req, res) => {
   try {
-    const { content, description, image } = req.body;
+    // const { content, description, image } = req.body;
     //add file
-    const file = req.file
-
+    const files = req.files;
     //upload file to cloudinary server
-    const result = await cloudinary.uploader.upload(file.path, {
-      resource_type: 'auto',
-      folder: 'Trip',
-    })
-    //remove temporary folder
-    fs.unlinkSync(file.path)
+    const uploadPromises = files.map(f => {
+      return cloudinary.uploader.upload(f.path, {
+          resource_type: 'auto',
+          folder: 'Trip',
+        }) .then(result => {
+          // Xử lý kết quả từ Cloudinary
+          // console.log(result);
+          fs.unlinkSync(f.path); // Xóa tệp tạm thời sau khi đã tải lên thành công
+          return result;
+        });;
+    });
+    Promise.all(uploadPromises)
+      .then(results => {
+        const imageUrl = results.map(result => result.url);
+        // Xử lý kết quả từ Cloudinary
+        // console.log(results);
+       return res.status(200).json({ message: 'Upload successful',
+      data: imageUrl });
+      })
+      .catch(error => {
+        // Xử lý lỗi từ Cloudinary
+        console.log(error);
+        return  res.status(400).json({ error: 'Upload failed' });
+      });
 
-
-    const imageUrl = result && result.secure_url;
     // url-mongo 
-    const updatePost = await PostModel.findOneAndUpdate(
-      { _id: req.params.id },
-      {
-        content,
-        description,
-        image: imageUrl
-      },
-      {
-        new: true,
-      }
-    )
-    return res.json({
-      message: 'Uploading image successfully',
-      data: updatePost
-    })
+    // const updatePost = await PostModel.findOneAndUpdate(
+    //   { _id: req.params.id },
+    //   {
+    //     content,
+    //     description,
+    //     image: imageUrl
+    //   },
+    //   {
+    //     new: true,
+    //   }
+    // )
+    // return res.json({
+    //   message: 'Uploading image successfully',
+    //   data: imageUrl
+    // })
   } catch (error) {
-    res.status(500).send(error)
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 // get post by id
 const getPost = async (req, res) => {
   try {
-    const { id } = req.user
-    const post = await PostModel.find({ user: id })
-    res.json({
+    const { id } = req.params;
+    const post = await PostModel.findById(id);
+    res.status(200).json({
       data: post
     })
 
@@ -150,12 +167,63 @@ const deletePost = async (req, res) => {
   }
 };
 
+const likePost = async (req, res) => {
+  try {
+    const idPost = req.params.idPost;
+    const userId = req.user.id;
+    const post = await PostModel.findById(idPost);
+    if(!post) {
+      return res.status(404).json({
+        message: 'Post not found'
+      })
+    };
+    const likedByUser = post.likes.includes(userId)
+   if(likedByUser) {
+    post.likes.pop(userId)
+   } else {
+    post.likes.push(userId)
+   }
+   const updatePost = await post.save()
+
+    res.status(201).json({
+      data:updatePost,
+      message: 'Like or unlike successfully'
+    })
+  } catch (error) {
+    res.status(400).json({
+      message: error.message
+    })
+  }
+};
+const checklike = async (req, res) => {
+ try {
+  const idPost = req.params.idPost;
+  const userId = req.user.id;
+  const post = await PostModel.findById(idPost);
+  if(!post) {
+    return res.status(404).json({
+      message: 'Post not found'
+    })
+  };
+  const likedByUser = post.likes.includes(userId)
+  res.status(200).json({
+    data: likedByUser,
+    message: 'Success'
+  })
+ } catch (error) {
+  res.status(400).json({
+    message: error.message
+  })
+ }
+};
 const PostCtrl = {
   getAllPosts,
   createPost,
   getPost,
   updatePost,
   deletePost,
-  uploadsImage
+  uploadsImage,
+  likePost,
+  checklike
 }
 export default PostCtrl
