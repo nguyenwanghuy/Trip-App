@@ -7,7 +7,6 @@ export const API = axios.create({
   baseURL: API_URL,
   responseType: 'json',
 });
-
 export const apiRequest = async ({ url, token, data, method }) => {
   try {
     const result = await API({
@@ -15,11 +14,10 @@ export const apiRequest = async ({ url, token, data, method }) => {
       method: method || 'GET',
       data: data,
       headers: {
+        'x-access-token': token,
         'content-type': 'application/json',
-        'x-access-token': token ? `Bearer ${token}` : '',
       },
     });
-    console.log(result.data);
     return result.data;
   } catch (error) {
     const err = error.response.data;
@@ -31,11 +29,12 @@ export const apiRequest = async ({ url, token, data, method }) => {
 export const handleFileUpload = async (uploadFile) => {
   const formData = new FormData();
   formData.append('file', uploadFile);
-  formData.append('upload_presets', 'socialmedia');
+  formData.append('upload_preset', 'socialmedia');
+  console.log(formData);
 
   try {
     const response = await axios.post(
-      `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_ID}/image/upload/`,
+      `http://api.cloudinary.com/v1_1/dmlc8hjzu/image/upload/`,
       formData,
     );
     return response.data.secure_url;
@@ -49,7 +48,7 @@ export const fetchPosts = async (token, dispatch, uri, data) => {
     const res = await apiRequest({
       url: uri || '/post',
       token: token,
-      method: 'POST',
+      method: 'GET',
       data: data || {},
     });
     dispatch(SetPosts(res?.data));

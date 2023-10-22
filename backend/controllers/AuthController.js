@@ -22,7 +22,6 @@ const login = async (req, res) => {
       password,
       existingUser.password,
     );
-    console.log(isMatchPassword);
     if (!isMatchPassword) {
       return res.status(401).json({
         message: 'Invalid credentials!',
@@ -38,7 +37,6 @@ const login = async (req, res) => {
       expiresIn: '1h',
     });
     res.json({
-      payload: jwtPayload,
       token: token,
       message: 'Login successfully',
     });

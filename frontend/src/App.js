@@ -1,10 +1,12 @@
 import { Outlet, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Home, Login, Profile, Register, ResetPassword } from './pages';
+import AuthenContext from './context/AuthContext/authContext';
+import AuthState from './context/AuthContext/authState';
 
 function Layout() {
   const { user } = useSelector((state) => state.user);
-  console.log(user);
+  // console.log(user);
   const location = useLocation();
 
   return user?.token ? (
@@ -18,6 +20,7 @@ function App() {
   const { theme } = useSelector((state) => state.theme);
 
   return (
+    // <AuthState>
     <div data-theme={theme} className='w-full min-h-[100vh]'>
       <Routes>
         <Route element={<Layout />}>
@@ -30,6 +33,7 @@ function App() {
         <Route path='/reset-password' element={<ResetPassword />} />
       </Routes>
     </div>
+    // </AuthState>
   );
 }
 

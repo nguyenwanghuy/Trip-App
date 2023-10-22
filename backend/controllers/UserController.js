@@ -41,11 +41,11 @@ fs.unlinkSync(file.path)
   res.status(500).send(error)
  }
 }
-// get by id
+// get user by id
 const getUser = async (req, res) => {
   try {
     const {id} = req.params
-    const user = await UserModel.findById(id)
+    const user = await UserModel.findById(id).select('-password')
     res.status(200).json({
       data: user,
       message: 'User here'
@@ -60,7 +60,50 @@ const getUserFriends = async (req, res) => {
   try {
     const {id} = req.params
     const user = await UserModel.findById(id);
-    
+    const friends = await Promise.all(
+      user.friends.map((id)=>UserModel.findById(id))
+    );
+    const formatFriend = friends.map(
+      ({_id, fullname, username, avatar}) => {
+        return {_id, fullname, username, avatar}
+      }
+    )
+    res.status(200).json({
+      data: formatFriend,
+      message: 'You are my friend'
+    })
+  } catch (error) {
+    res.status(500).send({message: error.message})
+  }
+};
+
+const addRemoveFriend = async(req, res) => {
+  try {
+    const {id,friendId} = req.params
+    const user = await UserModel.findById(id)
+    const friend = await UserModel.findById(friendId)
+    if( user.friends.includes(friendId)) {
+      user.friends = user.friends.filter((id)  => id !== friendId)
+      friend.friends = friend.friends.filter((id)  => id !== id)
+    }else {
+      user.friends.push(friendId)
+      friend.friends.push(id)
+    }
+    await user.save();
+    await friend.save();
+
+    const friends = await Promise.all(
+      user.friends.map((id)=>UserModel.findById(id))
+    );
+    const formatFriend = friends.map(
+      ({_id, fullname, username, avatar}) => {
+        return {_id, fullname, username, avatar}
+      }
+    )
+    res.status(200).json({
+      data: formatFriend,
+      message: 'Add and remove friend'
+    })
   } catch (error) {
     res.status(500).send({message: error.message})
   }
@@ -68,7 +111,8 @@ const getUserFriends = async (req, res) => {
 const UserCtrl = {
   uploadAvatar,
   getUser,
-  getUserFriends
+  getUserFriends,
+  addRemoveFriend
 }
 
 export default UserCtrl;

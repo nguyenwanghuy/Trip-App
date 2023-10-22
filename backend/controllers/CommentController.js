@@ -22,12 +22,10 @@ const createComment = async (req,res) => {
     })
    } catch (error) {
     res.status(500).send(error)
-
-   }
-    
+   } 
 }
 const getComment = async (req, res) => {
-    const comment = await CommentModel.find().sort({ createdAt: -1 }) 
+    const comment = await CommentModel.find() 
     if(!comment) return res.status(400).json({message: 'Comment not found'})
     res.json({
         data: comment

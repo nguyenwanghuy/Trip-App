@@ -167,7 +167,7 @@ const PostCard = ({ post, user, deletePost, likePost }) => {
       </div>
 
       <div>
-        <p className='text-ascent-2'>
+        <div className='text-ascent-2'>
           {post?.image && (
             <img
               src={post?.image}
@@ -176,27 +176,52 @@ const PostCard = ({ post, user, deletePost, likePost }) => {
             />
           )}
 
-          {showAll === post?._id
-            ? post?.description
-            : post?.description.slice(0, 300)}
+          <div className='font-bold'>
+            {showAll === post?._id
+              ? post?.description
+              : post?.description?.slice(0, 300)}
 
-          {post?.description?.length > 301 &&
-            (showAll === post?._id ? (
-              <span
-                className='text-blue ml-2 font-mediu cursor-pointer'
-                onClick={() => setShowAll(0)}
-              >
-                Show Less
-              </span>
-            ) : (
-              <span
-                className='text-blue ml-2 font-medium cursor-pointer'
-                onClick={() => setShowAll(post?._id)}
-              >
-                Show More
-              </span>
-            ))}
-        </p>
+            {post?.description?.length > 301 &&
+              (showAll === post?._id ? (
+                <span
+                  className='text-blue ml-2 font-mediu cursor-pointer'
+                  onClick={() => setShowAll(0)}
+                >
+                  Show Less
+                </span>
+              ) : (
+                <span
+                  className='text-blue ml-2 font-medium cursor-pointer'
+                  onClick={() => setShowAll(post?._id)}
+                >
+                  Show More
+                </span>
+              ))}
+          </div>
+
+          <div>
+            {showAll === post?._id
+              ? post?.content
+              : post?.content?.slice(0, 300)}
+
+            {post?.content?.length > 301 &&
+              (showAll === post?._id ? (
+                <span
+                  className='text-blue ml-2 font-mediu cursor-pointer'
+                  onClick={() => setShowAll(0)}
+                >
+                  Show Less
+                </span>
+              ) : (
+                <span
+                  className='text-blue ml-2 font-medium cursor-pointer'
+                  onClick={() => setShowAll(post?._id)}
+                >
+                  Show More
+                </span>
+              ))}
+          </div>
+        </div>
       </div>
 
       <div

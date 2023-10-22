@@ -15,7 +15,8 @@ import NoProfile from '../assets/NoProfile.jpg';
 import { BsFiletypeGif, BsPersonFillAdd } from 'react-icons/bs';
 import { BiImages, BiSolidVideo } from 'react-icons/bi';
 import { useForm } from 'react-hook-form';
-import { apiRequest, fetchPosts } from '../utils';
+import { apiRequest, fetchPosts, handleFileUpload } from '../utils';
+import PostForm from '../components/PostForm';
 
 const Home = () => {
   const { user } = useSelector((state) => state.user);
@@ -38,26 +39,30 @@ const Home = () => {
 
   const fetchPost = async () => {
     await fetchPosts(user?.token, dispatch);
-    console.log(user?.token);
     setLoading(false);
   };
 
   const handlePostSubmit = async (data) => {
     setPosting(true);
     setErrMsg('');
+
     try {
+      const uri = file && (await handleFileUpload(file));
+
+      const newData = { ...data, image: uri };
       const res = await apiRequest({
         url: '/post',
-        data: data,
+        data: newData,
         token: user?.token,
         method: 'POST',
       });
-      console.log(res);
+
       if (res?.status === 'failed') {
         setErrMsg(res);
       } else {
         reset({
           description: '',
+          content: '',
         });
         setFile(null);
         setErrMsg('');
@@ -108,6 +113,15 @@ const Home = () => {
                   })}
                   error={errors.description ? errors.description.message : ''}
                 />
+                <TextInput
+                  styles='w-full rounded-full py-5'
+                  placeholder="What's on your mind...."
+                  name='content'
+                  register={register('content', {
+                    required: 'Write something about post',
+                  })}
+                  error={errors.content ? errors.content.message : ''}
+                />
               </div>
               {errMsg?.message && (
                 <span
@@ -133,7 +147,7 @@ const Home = () => {
                     className='hidden'
                     id='imgUpload'
                     data-max-size='5120'
-                    accept='.jpg, .png, .jpeg'
+                    accept='.jpg, .png, .jpeg, .gif'
                   />
                   <BiImages />
                   <span>Image</span>
@@ -184,6 +198,15 @@ const Home = () => {
                 </div>
               </div>
             </form>
+
+            {/* <PostForm
+              user={user}
+              posting={posting}
+              setPosting={setPosting}
+              errMsg={errMsg}
+              setErrMsg={setErrMsg}
+              fetchPost={fetchPost}
+            /> */}
 
             {loading ? (
               <Loading />
