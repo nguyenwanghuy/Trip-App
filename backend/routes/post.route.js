@@ -7,19 +7,16 @@ import  uploadFile from '../configs/upload.multer.js'
 
 const router = express.Router();
 router.use(authMiddleware)
-
-router.get('/', PostCtrl.getAllPosts );
-router.post('/', PostCtrl.createPost);
+//http://localhost:8001/trip/post
+router.get('/', PostCtrl.getAllPosts ); // lất tất cả bài post
+router.post('/', PostCtrl.createPost); // tạo 1 bài post
 router.get('/:id/users', PostCtrl.getPost ); // get post user 
-router.put('/:id', PostCtrl.updatePost);
-router.delete('/:id', PostCtrl.deletePost);
-
-router.get('/:idPost/like/:id', PostCtrl.checklike); //kiểm tra trạng thái like của một bài viết cho một người dùng cụ thể.
-router.put('/:idPost/like', PostCtrl.likePost);
-
-router.post('/image',uploadFile.array('image',5),PostCtrl.uploadsImage)
-
-
+router.put('/:id', PostCtrl.updatePost); // update post
+router.delete('/:id', PostCtrl.deletePost); // delete post
+router.put('/:idPost/like', PostCtrl.likePost); // like post
+router.post('/image',uploadFile.array('image',5),PostCtrl.uploadsImage) // upload image tối đa 5 ảnh
+router.post('/viewFriend', PostCtrl.checkViewFriend) // chọn bạn để được xem
+router.post('/viewPrivate', PostCtrl.checkViewPrivate) // chọn xem 1 mình
 
 
 

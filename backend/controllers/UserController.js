@@ -55,27 +55,6 @@ const getUser = async (req, res) => {
   }
 };
 
-// get user friends
-const getUserFriends = async (req, res) => {
-  try {
-    const {id} = req.params
-    const user = await UserModel.findById(id);
-    const friends = await Promise.all(
-      user.friends.map((id)=>UserModel.findById(id))
-    );
-    const formatFriend = friends.map(
-      ({_id, fullname, username, avatar}) => {
-        return {_id, fullname, username, avatar}
-      }
-    )
-    res.status(200).json({
-      data: formatFriend,
-      message: 'You are my friend'
-    })
-  } catch (error) {
-    res.status(500).send({message: error.message})
-  }
-};
 
 const addRemoveFriend = async(req, res) => {
   try {
@@ -111,7 +90,6 @@ const addRemoveFriend = async(req, res) => {
 const UserCtrl = {
   uploadAvatar,
   getUser,
-  getUserFriends,
   addRemoveFriend
 }
 
