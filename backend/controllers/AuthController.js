@@ -16,7 +16,7 @@ const login= async (req, res) => {
                 message: "Invalid credentials!",
             })
         }
-       
+        // console.log(existingUser)
         //check password
         const isMatchPassword = await bcrypt.compare(
             password,
@@ -36,6 +36,7 @@ const jwtPayload = {
 const token = jwt.sign(jwtPayload,process.env.SECRET_KEY, {
     expiresIn: "1h",
 })
+
         res.json({
             accessToken: token,
             message: "Login successfully",
@@ -94,10 +95,43 @@ const getMe =  async (req, res) =>{
         message:'success'
     })
 }
-
+const getMeProfile = async (req, res) => {
+    try {
+      const { avatar, fullname, age, dateOfBirth, gender, description, password } = req.body;
+      const { id } = req.user;
+      const salt = await bcrypt.genSalt(10);
+      const hashPassword = await bcrypt.hash(password,salt)
+      // Tìm người dùng trong cơ sở dữ liệu và cập nhật thông tin cá nhân
+      const updatedUser = await UserModel.findOneAndUpdate(
+        { _id: id },
+        {
+          avatar,
+          fullname,
+          age,
+          dateOfBirth,
+          gender,
+          description,
+          password:hashPassword
+        },
+        { new: true }
+      );
+  
+      if (!updatedUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      return res.status(200).json({
+        updateMeProfile: updatedUser,
+        message: 'Your profile has been updated'
+      });
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  };
 const AuthCtrl = {
     login,
     register,
     getMe,
+    getMeProfile,
 }
 export default AuthCtrl

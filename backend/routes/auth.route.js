@@ -2,8 +2,9 @@ import express from "express";
 import AuthCtrl from "../controllers/authController.js";
 import {authMiddleware} from '../middlewares/auth.middleware.js'
 const router = express.Router();
-
-router.post('/login', AuthCtrl.login);
-router.post('/register', AuthCtrl.register);
-router.get('/me',authMiddleware ,AuthCtrl.getMe);
+//http://localhost:8001/trip/auth
+router.post('/login', AuthCtrl.login); // đăng nhập tài khoản
+router.post('/register', AuthCtrl.register); // đăng ký tài khoản
+router.get('/me',authMiddleware ,AuthCtrl.getMe); // vào trang cá nhân
+router.put('/me/profile',authMiddleware ,AuthCtrl.getMeProfile); // sửa trang cá nhân
 export default router;
