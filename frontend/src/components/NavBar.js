@@ -2,7 +2,7 @@ import React from 'react';
 import { TbSocial } from 'react-icons/tb';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { TextInput, Button } from './index';
+import { TextInput, CustomButton } from './index';
 import { useForm } from 'react-hook-form';
 import { BsMoon, BsSunFill } from 'react-icons/bs';
 import { IoMdNotificationsOutline } from 'react-icons/io';
@@ -49,7 +49,7 @@ const NavBar = () => {
           styles='w-[18rem] lg:w-[38rem] rounded-l-xl rounded-r-none py-3 '
           register={register('search')}
         />
-        <Button
+        <CustomButton
           title='Search'
           type='submit'
           containerStyles='bg-[#0444a4] text-white px-6 py-[0.7rem] mt-2 rounded-r-xl'
@@ -58,15 +58,15 @@ const NavBar = () => {
 
       {/* ICONS */}
       <div className='flex gap-4 items-center text-ascent-1 text-md md:text-xl'>
-        <button onClick={() => handleTheme()}>
+        <CustomButton onClick={() => handleTheme()}>
           {theme ? <BsMoon /> : <BsSunFill />}
-        </button>
+        </CustomButton>
         <div className='hidden lg:flex'>
           <IoMdNotificationsOutline />
         </div>
 
         <div>
-          <Button
+          <CustomButton
             onClick={() => dispatch(userLogout())}
             title='Log Out'
             containerStyles='text-sm text-ascent-1 px-4 md:px-6 py-1 md:py-2 border border-[#666] rounded-full'

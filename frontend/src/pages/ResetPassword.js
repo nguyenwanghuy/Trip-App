@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Button, Loading, TextInput } from '../components';
+import { customButton, Loading, TextInput } from '../components';
 
 const ResetPassword = () => {
   const [errMsg, setErrMsg] = useState('');
@@ -57,7 +57,7 @@ const ResetPassword = () => {
           {isSubmitting ? (
             <Loading />
           ) : (
-            <Button
+            <customButton
               type='submit'
               containerStyles={`inline-flex justify-center rounded-md bg-blue px-8 py-3 text-sm font-medium text-white outline-none`}
               title='Submit'

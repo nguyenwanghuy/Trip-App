@@ -6,8 +6,21 @@ import { BiComment, BiLike, BiSolidLike } from 'react-icons/bi';
 import { MdOutlineDeleteOutline } from 'react-icons/md';
 import { BsEye, BsThreeDots } from 'react-icons/bs';
 import { useForm } from 'react-hook-form';
-import { TextInput, Loading, Button } from './index';
-import { postComments } from '../assets/data';
+import { TextInput, Loading, CustomButton } from './index';
+import { apiRequest } from '../utils';
+
+const getPostComments = async (id, token) => {
+  try {
+    const res = await apiRequest({
+      url: '/comment/' + id,
+      token: token,
+      method: 'GET',
+    });
+    return res?.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 const ReplyCard = ({ reply, user, handleLike }) => {
   return (
@@ -56,6 +69,9 @@ const ReplyCard = ({ reply, user, handleLike }) => {
 const CommentForm = ({ user, id, replyAt, getComments }) => {
   const [loading, setLoading] = useState(false);
   const [errMsg, setErrMsg] = useState('');
+
+  console.log('commentid', id);
+
   const {
     register,
     handleSubmit,
@@ -65,8 +81,67 @@ const CommentForm = ({ user, id, replyAt, getComments }) => {
     mode: 'onChange',
   });
 
-  const onSubmit = async (data) => {};
+  // const onSubmit = async (data) => {
+  //   setLoading(true);
+  //   setErrMsg('');
+  //   try {
+  //     const URL = !replyAt ? '/post/comment' + id : '/post/reply' + id;
 
+  //     const newData = {
+  //       comment: data?.comment,
+  //       from: user?.username,
+  //       replyAt: replyAt,
+  //     };
+  //     const res = await apiRequest({
+  //       url: URL,
+  //       data: newData,
+  //       token: user?.token,
+  //       method: 'POST',
+  //     });
+
+  //     if (res?.status === 'failed') {
+  //       setErrMsg(res);
+  //     } else {
+  //       reset({ comment: '' });
+  //       setErrMsg('');
+  //       await getComments();
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //     setLoading(false);
+  //   }
+  // };
+  const onSubmit = async (data) => {
+    setLoading(true);
+    setErrMsg('');
+    try {
+      const URL = '/comment/' + id; // URL for posting a comment
+
+      const newData = {
+        description: data?.description,
+        from: user?.username,
+      };
+
+      console.log(newData);
+      const res = await apiRequest({
+        url: URL,
+        data: newData,
+        token: user?.token,
+        method: 'POST',
+      });
+
+      if (res?.status === 'failed') {
+        setErrMsg(res);
+      } else {
+        reset({ comment: '' });
+        setErrMsg('');
+        await getComments();
+      }
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
@@ -80,13 +155,13 @@ const CommentForm = ({ user, id, replyAt, getComments }) => {
         />
 
         <TextInput
-          name='comment'
+          name='description'
           styles='w-full rounded-full py-3 mb-1'
           placeholder={replyAt ? `Reply @${replyAt}` : 'Comment this post'}
-          register={register('comment', {
+          register={register('description', {
             required: 'Comment can not be empty',
           })}
-          error={errors.comment ? errors.comment.message : ''}
+          error={errors.description ? errors.description : ''}
         />
       </div>
       {errMsg?.message && (
@@ -106,7 +181,7 @@ const CommentForm = ({ user, id, replyAt, getComments }) => {
         {loading ? (
           <Loading />
         ) : (
-          <Button
+          <CustomButton
             title='Submit'
             type='submit'
             containerStyles='bg-[#0444a4] text-white py-1 px-3 rounded-full font-semibold text-sm'
@@ -117,7 +192,7 @@ const CommentForm = ({ user, id, replyAt, getComments }) => {
   );
 };
 
-const PostCard = ({ post, user, deletePost, likePost }) => {
+const PostCard = ({ post, user, deletePost, likePost, id }) => {
   const [showAll, setShowAll] = useState(0);
   const [showReply, setShowReply] = useState(0);
   const [comments, setComments] = useState([]);
@@ -127,11 +202,14 @@ const PostCard = ({ post, user, deletePost, likePost }) => {
 
   const getComments = async () => {
     setReplyComments(0);
-
-    setComments(postComments);
+    const result = await getPostComments(id, user.token);
+    setComments(result);
     setLoading(false);
   };
-  const handleLike = async () => {};
+  const handleLike = async (uri) => {
+    await likePost(uri);
+    await getComments(post?._id);
+  };
 
   return (
     <div className='mb-2 bg-primary p-4 rounded-xl'>
@@ -140,7 +218,7 @@ const PostCard = ({ post, user, deletePost, likePost }) => {
           <img
             src={post?.userId?.profileUrl ?? NoProfile}
             alt={post?.userId?.firstName}
-            className='w-14 h-14 object-cover rounded-full'
+            className='w-14 h-15 object-cover rounded-full'
           />
         </Link>
 
@@ -156,9 +234,9 @@ const PostCard = ({ post, user, deletePost, likePost }) => {
             </span>
           </div>
 
-          <button className='hover:bg-[#66666645] p-4 rounded-full'>
+          <CustomButton className='hover:bg-[#66666645] p-4 rounded-full'>
             <BsThreeDots />
-          </button>
+          </CustomButton>
         </div>
       </div>
 
@@ -168,13 +246,19 @@ const PostCard = ({ post, user, deletePost, likePost }) => {
 
       <div>
         <div className='text-ascent-2'>
-          {post?.image && (
-            <img
-              src={post?.image}
-              alt='post image'
-              className='w-full mt-2 rounded-lg'
-            />
-          )}
+          {post?.image &&
+            Array.isArray(post.image) &&
+            post.image.length > 0 &&
+            post.image.map((img, index) => {
+              return (
+                <img
+                  key={index}
+                  src={img}
+                  alt='post image'
+                  className='w-full mt-2 rounded-lg'
+                />
+              );
+            })}
 
           <div className='font-bold'>
             {showAll === post?._id
@@ -228,7 +312,10 @@ const PostCard = ({ post, user, deletePost, likePost }) => {
         className='mt-4 flex justify-between items-center px-3 py-2 text-ascent-2
       text-base border-t border-[#66666645]'
       >
-        <p className='flex gap-2 items-center text-base cursor-pointer'>
+        <p
+          className='flex gap-2 items-center text-base cursor-pointer'
+          onClick={() => handleLike()}
+        >
           {post?.likes?.includes(user?._id) ? (
             <BiSolidLike size={20} color='blue' />
           ) : (

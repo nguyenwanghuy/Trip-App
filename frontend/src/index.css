@@ -92,3 +92,18 @@
     --color-white: 255 255 255;
   }
 }
+
+.custom-ok-button {
+  /* Default button styles (primary color) */
+  background-color: #1890ff; /* Primary color background by default */
+  border: 2px solid #1890ff; /* Primary color border by default */
+  color: #fff; /* White text color by default */
+  transition: background-color 0.3s, color 0.3s; /* Add a smooth transition effect */
+
+  /* Change color to white on hover */
+  &:hover {
+    background-color: #fff; /* White background on hover */
+    border: 2px solid #fff; /* White border on hover */
+    color: #1890ff; /* Primary color text on hover */
+  }
+}

@@ -72,7 +72,7 @@ const uploadsImage = async (req, res) => {
       return cloudinary.uploader
         .upload(f.path, {
           resource_type: 'auto',
-          folder: 'Trip',
+          folder: 'SOCIALMEDIA',
         })
         .then((result) => {
           // Xử lý kết quả từ Cloudinary
@@ -153,6 +153,7 @@ const updatePost = async (req, res) => {
     res.status(500).send(error);
   }
 };
+
 //delete post by id
 const deletePost = async (req, res) => {
   try {

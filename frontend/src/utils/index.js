@@ -26,22 +26,48 @@ export const apiRequest = async ({ url, token, data, method }) => {
   }
 };
 
-export const handleFileUpload = async (uploadFile) => {
-  const formData = new FormData();
-  formData.append('file', uploadFile);
-  formData.append('upload_preset', 'socialmedia');
-  console.log(formData);
-
-  try {
-    const response = await axios.post(
-      `http://api.cloudinary.com/v1_1/dmlc8hjzu/image/upload/`,
-      formData,
-    );
-    return response.data.secure_url;
-  } catch (error) {
-    console.log(error);
+export const handleFileUpload = async (uploadFiles) => {
+  if (!Array.isArray(uploadFiles)) {
+    uploadFiles = [uploadFiles]; // Chuyển đổi thành mảng nếu không phải mảng
   }
+  const uploadPromises = uploadFiles.map(async (uploadFile) => {
+    const formData = new FormData();
+    formData.append('file', uploadFile);
+    formData.append('upload_preset', 'socialmedia');
+
+    try {
+      const response = await axios.post(
+        `http://api.cloudinary.com/v1_1/dmlc8hjzu/image/upload/`,
+        formData,
+      );
+      return response.data.secure_url;
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
+  // Wait for all uploads to complete
+  const uploadedFileURLs = await Promise.all(uploadPromises);
+
+  return uploadedFileURLs;
 };
+
+// export const handleFileUpload = async (uploadFile) => {
+//   const formData = new FormData();
+//   formData.append('file', uploadFile);
+//   formData.append('upload_preset', 'socialmedia');
+//   console.log(formData);
+
+//   try {
+//     const response = await axios.post(
+//       `http://api.cloudinary.com/v1_1/dmlc8hjzu/image/upload/`,
+//       formData,
+//     );
+//     return response.data.secure_url;
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
 
 export const fetchPosts = async (token, dispatch, uri, data) => {
   try {

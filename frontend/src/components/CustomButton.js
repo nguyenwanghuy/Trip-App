@@ -1,4 +1,4 @@
-const Button = ({ title, containerStyles, iconRight, type, onClick }) => {
+const CustomButton = ({ title, containerStyles, iconRight, type, onClick }) => {
   return (
     <button
       onClick={onClick}
@@ -12,4 +12,4 @@ const Button = ({ title, containerStyles, iconRight, type, onClick }) => {
   );
 };
 
-export default Button;
+export default CustomButton;
