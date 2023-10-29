@@ -1,6 +1,7 @@
 import express from 'express';
 import "dotenv/config";
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { connectToDatabase } from './configs/db.js';
 import router from './routes/index.js';
 
@@ -23,6 +24,7 @@ connectToDatabase()
 //middleware
 app.use(express.json());
 app.use(cors('*'));
+app.use(cookieParser());
 //routing
 app.use('/trip', router)
 

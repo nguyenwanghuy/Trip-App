@@ -37,7 +37,7 @@ const getAllPosts = async (req, res) => {
 // create a new post
 const createPost = async (req, res) => {
   const { content, description, image } = req.body;
-  const { id } = req.user;
+  const { id, username } = req.user;
   // console.log(id)
   const currentUser = await UserModel.findById(id);
   // console.log(currentUser)
@@ -50,6 +50,7 @@ const createPost = async (req, res) => {
     description,
     image,
     user: id,
+    username: username
     
   })
   // console.log(newPost._id)
