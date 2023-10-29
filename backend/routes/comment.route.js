@@ -4,10 +4,10 @@ import { authMiddleware } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 router.use(authMiddleware);
-
-router.get('/', CommentCtrl.getComment);
-router.post('/:id', CommentCtrl.createComment);
-router.put('/:id', CommentCtrl.updateComment);
-router.delete('/:id', CommentCtrl.deleteComment);
+//http://localhost:8001/trip/comment
+router.get('/', CommentCtrl.getComment); // lấy tất cả comment có thể không dùng đến
+router.post('/:id', CommentCtrl.createComment); // đăng theo id bài post
+router.put('/:id', CommentCtrl.updateComment); // update comment theo id post
+router.delete('/:id', CommentCtrl.deleteComment); // delete comment theo id post
 
 export default router;

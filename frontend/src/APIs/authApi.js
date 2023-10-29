@@ -11,7 +11,6 @@ const authAPI = {
   searchText: (values) => axiosInstance.get(`/post/search?title=${values}`),
   createComment: (values) => axiosInstance.post('/comment', values),
   getAllComments: () => axiosInstance.get('/comment'),
-
   getAllVideos: () => axiosInstance.get('/video'),
   addVideo: (values) => axiosInstance.post('/video/upload', values),
 };

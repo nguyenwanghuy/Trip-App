@@ -35,7 +35,7 @@ const NavBar = () => {
         <div className='p-1 md:p-2 bg-[#065ad8] rounded text-white font-extrabold text-xl'>
           TS
         </div>
-        <span className='text-xl md:text-2xl text-[#065ad8] font-semibold'>
+        <span className='text-xxl font-bold text-slate-400'>
           TripSocial
         </span>
       </Link>

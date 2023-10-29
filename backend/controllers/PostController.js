@@ -16,11 +16,7 @@ const getAllPosts = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const size = parseInt(req.query.size) || 10;
     const skip = (page - 1) * size;
-
-    const posts = await PostModel.find()
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(size);
+    const posts = await PostModel.find().sort({ createdAt:-1 }).skip(skip).limit(size);
     const totalPosts = await PostModel.countDocuments();
     const totalPages = Math.ceil(totalPosts / size);
     res.json({
@@ -39,9 +35,10 @@ const getAllPosts = async (req, res) => {
 // create a new post
 const createPost = async (req, res) => {
   const { content, description, image } = req.body;
-  const { id } = req.user;
-  console.log(id);
+  const { id, username } = req.user;
+  // console.log(id)
   const currentUser = await UserModel.findById(id);
+  // console.log(currentUser)
   if (!currentUser) {
     res.status = 400;
     throw new Error('User not found');
@@ -51,8 +48,9 @@ const createPost = async (req, res) => {
     description,
     image,
     user: id,
+    username: username,
   });
-  console.log(newPost._id);
+  // console.log(newPost._id)
 
   //save the new post
   await newPost.save();
@@ -201,25 +199,63 @@ const likePost = async (req, res) => {
     });
   }
 };
-const checklike = async (req, res) => {
+
+const checkViewFriend = async (req, res) => {
+  const { content, description, image, viewers } = req.body;
+  const { id } = req.user;
+
+  const currentUser = await UserModel.findById(id).select('friends');
+  // console.log(currentUser)
+  if (!currentUser) {
+    res.status(400);
+    throw new Error('User not found');
+  }
+
+  const shareUser = currentUser.friends.filter((friend) =>
+    viewers.includes(friend),
+  );
+
+  const newPost = new PostModel({
+    content,
+    description,
+    image,
+    user: id,
+    viewers: shareUser,
+  });
+  await newPost.save();
+  res.send({
+    data: newPost,
+    message: 'Success',
+  });
+};
+
+const checkViewPrivate = async (req, res) => {
   try {
-    const idPost = req.params.idPost;
-    const userId = req.user.id;
-    const post = await PostModel.findById(idPost);
-    if (!post) {
-      return res.status(404).json({
-        message: 'Post not found',
-      });
+    const { content, description, image } = req.body;
+    const { id } = req.user;
+
+    // Kiểm tra xem người dùng hiện tại có tồn tại không
+    const currentUser = await UserModel.findById(id);
+    if (!currentUser) {
+      return res.status(400).json({ message: 'User not found' });
     }
-    const likedByUser = post.likes.includes(userId);
-    res.status(200).json({
-      data: likedByUser,
+
+    const newPost = new PostModel({
+      content,
+      description,
+      image,
+      viewers: [id],
+      isPrivate: true, // Chỉ mình người dùng hiện tại có thể xem bài viết
+    });
+
+    await newPost.save();
+
+    return res.status(201).json({
+      data: newPost,
       message: 'Success',
     });
   } catch (error) {
-    res.status(400).json({
-      message: error.message,
-    });
+    return res.status(400).json({ message: error.message });
   }
 };
 const PostCtrl = {
@@ -230,6 +266,7 @@ const PostCtrl = {
   deletePost,
   uploadsImage,
   likePost,
-  checklike,
+  checkViewFriend,
+  checkViewPrivate,
 };
 export default PostCtrl;

@@ -37,11 +37,11 @@ const Login = () => {
       });
 
       if (res?.status === 'failed') {
-        setErrMsg(res);
+        setErrMsg(res.message);
       } else {
         setErrMsg('');
-        const newData = { token: res?.token, ...res.payload };
-        dispatch(userLogin(newData));
+        const { token, ...payload } = res;
+        dispatch(userLogin({ token, ...payload }));
         window.location.replace('/');
       }
       setIsSubmitting(false);

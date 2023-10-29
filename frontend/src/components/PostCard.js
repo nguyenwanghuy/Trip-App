@@ -8,6 +8,7 @@ import { BsEye, BsThreeDots } from 'react-icons/bs';
 import { useForm } from 'react-hook-form';
 import { TextInput, Loading, CustomButton } from './index';
 import { apiRequest } from '../utils';
+import { Carousel } from 'react-bootstrap';
 
 const getPostComments = async (id, token) => {
   try {
@@ -225,9 +226,7 @@ const PostCard = ({ post, user, deletePost, likePost, id }) => {
         <div className='w-full flex justify-between'>
           <div className=''>
             <Link to={'/profile/' + post?.userId?._id}>
-              <p className='font-medium text-lg text-ascent-1'>
-                {post?.userId?.firstName} {post?.userId?.lastName}
-              </p>
+              <p className='font-medium text-lg text-ascent-1'>{post?.user}</p>
             </Link>
             <span className='text-ascent-2'>
               {moment(post?.createdAt ?? Date.now()).fromNow()}
@@ -246,20 +245,17 @@ const PostCard = ({ post, user, deletePost, likePost, id }) => {
 
       <div>
         <div className='text-ascent-2'>
-          {post?.image &&
-            Array.isArray(post.image) &&
-            post.image.length > 0 &&
-            post.image.map((img, index) => {
-              return (
+          {/* <Carousel className='h-[30rem]'>
+            {post.image.map((img, index) => (
+              <Carousel.Item key={index}>
                 <img
-                  key={index}
                   src={img}
-                  alt='post image'
-                  className='w-full mt-2 rounded-lg'
+                  alt={`Slide ${index}`}
+                  className='w-full rounded-lg h-[30rem]'
                 />
-              );
-            })}
-
+              </Carousel.Item>
+            ))}
+          </Carousel> */}
           <div className='font-bold'>
             {showAll === post?._id
               ? post?.description

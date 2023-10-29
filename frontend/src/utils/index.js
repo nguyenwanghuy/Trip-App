@@ -7,6 +7,7 @@ export const API = axios.create({
   baseURL: API_URL,
   responseType: 'json',
 });
+
 export const apiRequest = async ({ url, token, data, method }) => {
   try {
     const result = await API({
@@ -15,7 +16,7 @@ export const apiRequest = async ({ url, token, data, method }) => {
       data: data,
       headers: {
         'x-access-token': token,
-        'content-type': 'application/json',
+        'Content-Type': 'application/json',
       },
     });
     return result.data;
@@ -105,6 +106,26 @@ export const deletePost = async (id, token) => {
       method: 'DELETE',
     });
     return;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getUserInfo = async (id, token) => {
+  try {
+    const uri = id === undefined ? '/auth/me' : '/user/' + id;
+
+    const res = await apiRequest({
+      url: uri,
+      token: token,
+      method: 'GET',
+    });
+
+    if (res.message === 'Authentication failed') {
+      localStorage.removeItem('user');
+      window.location.replace('/login');
+    }
+    return res.user;
   } catch (error) {
     console.log(error);
   }

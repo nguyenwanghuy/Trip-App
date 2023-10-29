@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { Home, Login, Profile, Register, ResetPassword } from './pages';
 import AuthenContext from './context/AuthContext/authContext';
 import AuthState from './context/AuthContext/authState';
+// import 'bootstrap/dist/css/bootstrap.min.css';
 
 function Layout() {
   const { user } = useSelector((state) => state.user);

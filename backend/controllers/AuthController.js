@@ -10,18 +10,15 @@ const login = async (req, res) => {
         message: 'Missing required keys',
       });
     }
-    const existingUser = await UserModel.findOne({ username });
-    if (!existingUser) {
+    const user = await UserModel.findOne({ username });
+    if (!user) {
       return res.status(400).json({
         message: 'Invalid credentials!',
       });
     }
-
+    // console.log(user)
     //check password
-    const isMatchPassword = await bcrypt.compare(
-      password,
-      existingUser.password,
-    );
+    const isMatchPassword = await bcrypt.compare(password, user.password);
     if (!isMatchPassword) {
       return res.status(401).json({
         message: 'Invalid credentials!',
@@ -29,15 +26,17 @@ const login = async (req, res) => {
     }
     //token
     const jwtPayload = {
-      id: existingUser.id,
-      username: existingUser.username,
-      password: existingUser.password,
+      id: user.id,
+      username: user.username,
+      avatar: user.avatar,
     };
     const token = jwt.sign(jwtPayload, process.env.SECRET_KEY, {
-      expiresIn: '1d',
+      expiresIn: '1h',
     });
+
     res.json({
       token: token,
+      user,
       message: 'Login successfully',
     });
   } catch (error) {
@@ -93,10 +92,51 @@ const getMe = async (req, res) => {
     message: 'success',
   });
 };
+const getMeProfile = async (req, res) => {
+  try {
+    const {
+      avatar,
+      fullname,
+      age,
+      dateOfBirth,
+      gender,
+      description,
+      password,
+    } = req.body;
+    const { id } = req.user;
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
+    // Tìm người dùng trong cơ sở dữ liệu và cập nhật thông tin cá nhân
+    const updatedUser = await UserModel.findOneAndUpdate(
+      { _id: id },
+      {
+        avatar,
+        fullname,
+        age,
+        dateOfBirth,
+        gender,
+        description,
+        password: hashPassword,
+      },
+      { new: true },
+    );
 
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.status(200).json({
+      updateMeProfile: updatedUser,
+      message: 'Your profile has been updated',
+    });
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
 const AuthCtrl = {
   login,
   register,
   getMe,
+  getMeProfile,
 };
 export default AuthCtrl;
