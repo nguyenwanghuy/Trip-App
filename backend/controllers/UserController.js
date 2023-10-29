@@ -55,7 +55,6 @@ const getUser = async (req, res) => {
   }
 };
 
-
 const addRemoveFriend = async(req, res) => {
   try {
     const {id,friendId} = req.params

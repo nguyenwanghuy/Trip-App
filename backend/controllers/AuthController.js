@@ -3,7 +3,6 @@ import bcrypt from "bcrypt";
 import UserModel from "../models/user.model.js";
 const login = async (req, res) => {
     const { username, password } = req.body;
-// test
     try {
         if (!username || !password) {
             return res.status(400).json({
