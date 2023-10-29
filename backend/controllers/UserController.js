@@ -55,7 +55,6 @@ const getUser = async (req, res) => {
   }
 };
 
-
 const addRemoveFriend = async(req, res) => {
   try {
     const {id,friendId} = req.params
@@ -87,10 +86,25 @@ const addRemoveFriend = async(req, res) => {
     res.status(500).send({message: error.message})
   }
 };
+
+const searchUsers = async (req, res) => {
+  try {
+    const {username} = req.params
+    const searchUsers = await UserModel.find({username: username}).select('username avatar')
+    if(!searchUsers) 
+    return res.status(404).json({message: 'User not found'})
+    res.status(200).json({ 
+      searchUsers: searchUsers 
+    });
+  } catch (error) {
+    res.status(500).send({message: error.message})
+  }
+};
 const UserCtrl = {
   uploadAvatar,
   getUser,
-  addRemoveFriend
+  addRemoveFriend,
+  searchUsers
 }
 
 export default UserCtrl;

@@ -48,8 +48,9 @@ const createPost = async (req, res) => {
     description,
     image,
     user: id,
-    username: username,
-  });
+    username: username
+    
+  })
   // console.log(newPost._id)
 
   //save the new post
