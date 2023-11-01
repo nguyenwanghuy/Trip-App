@@ -259,6 +259,20 @@ const checkViewPrivate = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+const getPostById = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const postsByUser = await PostModel.find({ user: userId });
+    res.status(200).json({
+      posts: postsByUser,
+      message: 'Success'
+    });
+  } catch (error) {
+    res.status(404).send({
+      message: error.message,
+    });
+  }
+};
 const PostCtrl = {
   getAllPosts,
   createPost,
@@ -269,5 +283,6 @@ const PostCtrl = {
   likePost,
   checkViewFriend,
   checkViewPrivate,
+  getPostById,
 };
 export default PostCtrl;

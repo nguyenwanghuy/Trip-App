@@ -240,7 +240,7 @@ const PostCard = ({ post, user, deletePost, likePost, id }) => {
       </div>
 
       <div>
-        <div className='text-ascent-2'>At {post?.userId?.location}</div>
+        <div className='text-ascent-2'> {post?.userId?.location}</div>
       </div>
 
       <div>

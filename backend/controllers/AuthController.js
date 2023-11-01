@@ -1,6 +1,7 @@
-import jwt from 'jsonwebtoken'
+import jwt, { decode } from 'jsonwebtoken'
 import bcrypt from "bcrypt";
 import UserModel from "../models/user.model.js";
+import RefreshTokenModel from '../models/refreshTokenModel.js';
 const login = async (req, res) => {
     const { username, password } = req.body;
     try {
@@ -47,7 +48,7 @@ const login = async (req, res) => {
         })
 
         res.json({
-            accessToken: token,
+            token: token,
             user: existingUser,
             message: "Login successfully",
         });
@@ -139,7 +140,7 @@ const getMeProfile = async (req, res) => {
     }
 };
 const requestRefreshToken = async (req, res) => {
-    //khi nào access token hết hạn thì lấy refresh token để tạo 1 cái access token mới
+    // Khi nào access token hết hạn thì lấy refresh token để tạo một access token mới
     // Lấy refresh token từ cookies
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
@@ -150,7 +151,7 @@ const requestRefreshToken = async (req, res) => {
 
     try {
         // Xác minh refresh token
-        jwt.verify(refreshToken, process.env.SECRET_KEY_REFRESH_TOKEN, (err, decoded) => {
+        jwt.verify(refreshToken, process.env.SECRET_KEY_REFRESH_TOKEN, async (err, decoded) => {
             if (err) {
                 return res.status(401).json({
                     message: "Invalid refresh token",
@@ -173,14 +174,26 @@ const requestRefreshToken = async (req, res) => {
             // Lưu trữ refresh token mới trong cookie
             res.cookie("refreshToken", newRefreshToken, {
                 httpOnly: true,
-                secure: false, // Khi deploy, hãy chuyển thành true
+                secure: false, // Khi triển khai, hãy chuyển thành true
                 path: "/",
                 sameSite: "strict",
             });
 
-            res.status(200).json({
-                accessToken: newAccessToken,
-            });
+            try {
+                // Lưu refresh token mới trong db
+                const refreshTokenEntry = new RefreshTokenModel({
+                    refreshToken: newRefreshToken,
+                    userId: decoded.id,
+                });
+                await refreshTokenEntry.save();
+
+                res.status(200).json({
+                    accessToken: newAccessToken,
+                });
+            } catch (error) {
+                console.log(error);
+                res.status(500).json(error);
+            }
         });
     } catch (error) {
         console.log(error);
@@ -188,11 +201,11 @@ const requestRefreshToken = async (req, res) => {
     }
 };
 const logout = async (req, res) => {
-    res.clearCookie('refreshToken'); 
+    res.clearCookie('refreshToken');
     res.status(200).json({
-      message: 'Logged out'
+        message: 'Logged out'
     });
-  };
+};
 const AuthCtrl = {
     login,
     register,

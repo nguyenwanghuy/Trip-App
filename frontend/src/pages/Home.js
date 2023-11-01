@@ -19,7 +19,6 @@ import PostForm from '../components/PostForm';
 
 const Home = () => {
   const { user } = useSelector((state) => state.user);
-  console.log(user);
   const { posts } = useSelector((state) => state.posts);
   const [friendRequest, setFriendRequest] = useState(requests);
   const [suggestedFriends, setSuggestedFriends] = useState(suggest);
@@ -44,6 +43,7 @@ const Home = () => {
 
   const fetchPost = async () => {
     await fetchPosts(user?.token, dispatch);
+  
     setLoading(false);
   };
 
