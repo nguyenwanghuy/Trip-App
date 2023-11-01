@@ -1,4 +1,5 @@
 import CommentModel from '../models/commentModel.js';
+import PostModel from '../models/postModel.js';
 
 const createComment = async (req, res) => {
   try {
@@ -7,7 +8,7 @@ const createComment = async (req, res) => {
     const id = req.user.id;
 
     if (!description || !post || !id) {
-      return res.json({ message: 'thiếu ' });
+      return res.json({ message: 'Missing data' });
     }
 
     const newComment = new CommentModel({
@@ -20,6 +21,10 @@ const createComment = async (req, res) => {
 
     await newComment.save();
 
+    const updatedPost = await PostModel.findByIdAndUpdate(post, {
+      $push: { comment: newComment._id },
+    }, { new: true });
+
     res.json({
       message: 'Comment created',
       data: newComment,
@@ -28,13 +33,23 @@ const createComment = async (req, res) => {
     res.status(500).send(error);
   }
 };
+
 const getComment = async (req, res) => {
-  const comment = await CommentModel.find({ _id: req.params.id });
-  if (!comment) return res.status(400).json({ message: 'Comment not found' });
-  res.json({
-    data: comment,
-  });
+    try {
+    const comment = await CommentModel.find({ post: req.params.id }); 
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+    
+    res.json({
+      data: comment,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
 };
+
+
 const updateComment = async (req, res) => {
   try {
     const { description } = req.body;

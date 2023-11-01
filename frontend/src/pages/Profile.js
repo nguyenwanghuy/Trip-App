@@ -1,26 +1,45 @@
-import React, { useContext, useState } from 'react';
-// import userAPI from '../api/userAPI';
-// import AuthContext from '../context/authContext';
-// import ProfileHeaderCard from '../components/ProfileHeaderCard';
+import React, { useContext, useState, useEffect } from 'react';
+
 import NoProfile from '../assets/NoProfile.jpg';
 import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import Loading from '../components/Loading';
 import FriendsCard from '../components/FriendsCard';
 import PostCard from '../components/PostCard';
-// import ProfileCard from '../components/ProfileCard';
-import { posts, user } from '../assets/data';
 import { NavBar } from '../components';
+import { apiRequest } from '../utils';
 
 const Profile = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.user);
-  // const { posts } = useSelector((state) => state.posts);
-  const [userInfo, setUserInfo] = useState(null);
+  const { posts } = useSelector((state) => state.posts);
+  const [userInfo, setUserInfo] = useState({});
   // const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(null);
+
+  const fetchUserData = async () => {
+    try {
+      const res = await apiRequest({
+        url: `/user/${id}`,
+        token: user.token,
+        method: 'GET',
+      });
+      console.log(res.data);
+      setUserInfo(res.data);
+      console.log(userInfo);
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserData();
+  }, [id]);
+
   // const {
   //   auth: { user },
   //   fetchCurrentUser,
@@ -67,26 +86,9 @@ const Profile = () => {
               src={NoProfile}
               className='w-full h-full rounded-full border-[5px] border-ascent-3 object-cover'
             />
-
-            {/* <div>
-      
-              <div>
-                <img
-                  className='w-full h-full rounded-full border-[5px] border-ascent-3 object-cover'
-                  alt='avatar'
-                  src={user?.avatar || ''}
-                />
-                <input
-                  type='file'
-                  onChange={handleFileChange}
-                  accept='image/*'
-                />
-                <button onClick={handleUpload}>Upload avatar</button>
-              </div>
-            </div> */}
           </div>
           <div className='font-bold text-2xl text-ascent-1'>
-            {user.username} {user.lastName}
+            {userInfo.username}
           </div>
         </div>
 

@@ -31,7 +31,7 @@ const login = async (req, res) => {
       avatar: user.avatar,
     };
     const token = jwt.sign(jwtPayload, process.env.SECRET_KEY, {
-      expiresIn: '1h',
+      expiresIn: '7days',
     });
 
     res.json({

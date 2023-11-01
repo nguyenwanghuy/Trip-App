@@ -13,7 +13,7 @@ router.post('/', PostCtrl.createPost); // tạo 1 bài post
 router.get('/:id/users', PostCtrl.getPost); // get post user
 router.put('/:id', PostCtrl.updatePost); // update post
 router.delete('/:id', PostCtrl.deletePost); // delete post
-router.put('/:idPost/like', PostCtrl.likePost); // like post
+router.post('/like/:idPost', PostCtrl.likePost); // like post
 router.post('/image', uploadFile.array('image', 5), PostCtrl.uploadsImage); // upload image tối đa 5 ảnh
 router.post('/viewFriend', PostCtrl.checkViewFriend); // chọn bạn để được xem
 router.post('/viewPrivate', PostCtrl.checkViewPrivate); // chọn xem 1 mình

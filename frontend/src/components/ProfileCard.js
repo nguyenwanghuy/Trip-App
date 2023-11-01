@@ -58,7 +58,7 @@ const ProfileCard = ({ user }) => {
           </div>
         </div>
 
-        <div className='w-full flex flex-col gap-2 py-4 border-b border-[#66666645]'>
+        <div className='w-full flex flex-col gap-2 py-4 border-b border-[#66666645] '>
           <div className='flex gap-2 items-center text-ascent-2'>
             <CiLocationOn className='text-xl text-ascent-1' />
             <span>{user?.location ?? 'Add Location'}</span>

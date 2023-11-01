@@ -2,10 +2,6 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
-import { TbSocial } from 'react-icons/tb';
-import { BsShare } from 'react-icons/bs';
-import { AiOutlineInteraction } from 'react-icons/ai';
-import { ImConnection } from 'react-icons/im';
 import { Button, Loading, TextInput } from '../components';
 import { BsEye, BsEyeSlash } from 'react-icons/bs';
 import { apiRequest } from '../utils';
@@ -32,7 +28,6 @@ const Register = () => {
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
-    console.log(data);
     try {
       const res = await apiRequest({
         url: '/auth/register',
@@ -43,6 +38,7 @@ const Register = () => {
         setErrMsg(res);
       }
       setIsSubmitting(false);
+      window.location.replace('/login');
     } catch (error) {
       console.log(error);
       setIsSubmitting(false);
