@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux';
 import { Home, Login, Profile, Register, ResetPassword } from './pages';
 import AuthenContext from './context/AuthContext/authContext';
 import AuthState from './context/AuthContext/authState';
-// import 'bootstrap/dist/css/bootstrap.min.css';
 
 function Layout() {
   const { user } = useSelector((state) => state.user);
@@ -19,6 +18,7 @@ function Layout() {
 
 function App() {
   const { theme } = useSelector((state) => state.theme);
+  console.log(theme);
 
   return (
     // <AuthState>
@@ -26,7 +26,7 @@ function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route path='/' element={<Home />} />
-          <Route path='/profile/:id?' element={<Profile />} />
+          <Route path='/trip/user/:id?' element={<Profile />} />
         </Route>
 
         <Route path='/register' element={<Register />} />
