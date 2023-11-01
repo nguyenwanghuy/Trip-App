@@ -115,7 +115,7 @@ export const deletePost = async (id, token) => {
 
 export const getUserInfo = async (id, token) => {
   try {
-    const uri = id === undefined ? '/auth/me' : '/user/' + id;
+    const uri = id === undefined ? '/user/' + id : '/user/' + id;
 
     const res = await apiRequest({
       url: uri,
@@ -128,6 +128,20 @@ export const getUserInfo = async (id, token) => {
       window.location.replace('/login');
     }
     return res.user;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const viewUserProfile = async (token, id) => {
+  try {
+    const res = await apiRequest({
+      url: '/user/',
+      token: token,
+      method: 'POST',
+      data: { id },
+    });
+    return;
   } catch (error) {
     console.log(error);
   }

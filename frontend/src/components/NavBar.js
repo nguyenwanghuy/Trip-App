@@ -35,9 +35,7 @@ const NavBar = () => {
         <div className='p-1 md:p-2 bg-[#065ad8] rounded text-white font-extrabold text-xl'>
           TS
         </div>
-        <span className='text-xxl font-bold text-slate-400'>
-          TripSocial
-        </span>
+        <span className='text-xxl font-bold text-slate-400'>TripSocial</span>
       </Link>
 
       <form
@@ -58,9 +56,9 @@ const NavBar = () => {
 
       {/* ICONS */}
       <div className='flex gap-4 items-center text-ascent-1 text-md md:text-xl'>
-        <CustomButton onClick={() => handleTheme()}>
-          {theme ? <BsMoon /> : <BsSunFill />}
-        </CustomButton>
+        <button onClick={() => handleTheme()}>
+          {theme ? <span>Light</span> : <span>Dark</span>}
+        </button>
         <div className='hidden lg:flex'>
           <IoMdNotificationsOutline />
         </div>

@@ -2,11 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
-import { BsShare } from 'react-icons/bs';
-import { ImConnection } from 'react-icons/im';
 import { Button, Loading, TextInput } from '../components';
 import { BsEye, BsEyeSlash } from 'react-icons/bs';
-import { AiOutlineInteraction } from 'react-icons/ai';
 import { apiRequest } from '../utils';
 import { userLogin } from '../redux/userSlice';
 
@@ -38,7 +35,7 @@ const Login = () => {
       });
    
       if (res?.status === 'failed') {
-        setErrMsg(res.message);
+        setErrMsg(res);
       } else {
         setErrMsg('');
         const { token, ...payload } = res;
@@ -68,11 +65,11 @@ const Login = () => {
               label='Username'
               type='text'
               register={register('username', {
-                required: 'Email Address is required!',
+                required: 'Username is required!',
               })}
               styles='rounded-md border w-full'
               labelStyle='ml-2'
-              error={errors.user ? errors.user.message : ''}
+              error={errors.username ? errors.username.message : ''}
             />
 
             <div className='relative'>

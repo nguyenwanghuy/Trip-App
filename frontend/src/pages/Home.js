@@ -14,12 +14,19 @@ import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import NoProfile from '../assets/NoProfile.jpg';
 import { BsPersonFillAdd } from 'react-icons/bs';
-import { apiRequest, fetchPosts, handleFileUpload, likePost } from '../utils';
+import {
+  apiRequest,
+  deletePost,
+  fetchPosts,
+  handleFileUpload,
+  likePost,
+} from '../utils';
 import PostForm from '../components/PostForm';
 
 const Home = () => {
   const { user } = useSelector((state) => state.user);
   const { posts } = useSelector((state) => state.posts);
+  console.log(posts);
   const [friendRequest, setFriendRequest] = useState(requests);
   const [suggestedFriends, setSuggestedFriends] = useState(suggest);
   const [errMsg, setErrMsg] = useState('');
@@ -91,6 +98,11 @@ const Home = () => {
     await fetchPost();
   };
 
+  const handleDelete = async (id) => {
+    await deletePost(id, user?.token);
+    await fetchPost();
+  };
+
   useEffect(() => {
     setLoading(true);
     fetchPost();
@@ -128,7 +140,7 @@ const Home = () => {
                   key={post?._id}
                   post={post}
                   user={user}
-                  deletePost={() => {}}
+                  deletePost={handleDelete}
                   likePost={handleLikePost}
                   id={post?._id}
                 />

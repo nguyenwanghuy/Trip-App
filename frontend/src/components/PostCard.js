@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import NoProfile from '../assets/NoProfile.jpg';
@@ -8,7 +8,9 @@ import { BsEye, BsThreeDots } from 'react-icons/bs';
 import { useForm } from 'react-hook-form';
 import { TextInput, Loading, CustomButton } from './index';
 import { apiRequest } from '../utils';
-import { Carousel } from 'react-bootstrap';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
 const getPostComments = async (id, token) => {
   try {
@@ -17,7 +19,7 @@ const getPostComments = async (id, token) => {
       token: token,
       method: 'GET',
     });
-    return res?.data;
+    return res.data;
   } catch (error) {
     console.log(error);
   }
@@ -71,8 +73,6 @@ const CommentForm = ({ user, id, replyAt, getComments }) => {
   const [loading, setLoading] = useState(false);
   const [errMsg, setErrMsg] = useState('');
 
-  console.log('commentid', id);
-
   const {
     register,
     handleSubmit,
@@ -86,7 +86,7 @@ const CommentForm = ({ user, id, replyAt, getComments }) => {
   //   setLoading(true);
   //   setErrMsg('');
   //   try {
-  //     const URL = !replyAt ? '/post/comment' + id : '/post/reply' + id;
+  //     const URL = !replyAt ? '/comment/' + id : '/replyCmt/' + id;
 
   //     const newData = {
   //       comment: data?.comment,
@@ -116,14 +116,12 @@ const CommentForm = ({ user, id, replyAt, getComments }) => {
     setLoading(true);
     setErrMsg('');
     try {
-      const URL = '/comment/' + id; // URL for posting a comment
+      const URL = '/comment/' + id;
 
       const newData = {
         description: data?.description,
-        from: user?.username,
+        from: user.user.username,
       };
-
-      console.log(newData);
       const res = await apiRequest({
         url: URL,
         data: newData,
@@ -134,10 +132,11 @@ const CommentForm = ({ user, id, replyAt, getComments }) => {
       if (res?.status === 'failed') {
         setErrMsg(res);
       } else {
-        reset({ comment: '' });
+        reset({ description: '' });
         setErrMsg('');
         await getComments();
       }
+      setLoading(false);
     } catch (error) {
       console.log(error);
       setLoading(false);
@@ -201,17 +200,33 @@ const PostCard = ({ post, user, deletePost, likePost, id }) => {
   const [replyComments, setReplyComments] = useState(0);
   const [showComments, setShowComments] = useState(0);
 
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+  };
+
   const getComments = async () => {
     setReplyComments(0);
-    const result = await getPostComments(id, user.token);
-    setComments(result);
-    setLoading(false);
+    setLoading(true);
+    try {
+      const result = await getPostComments(post._id, user.token);
+      setComments(result);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
   };
   const handleLike = async (uri) => {
     await likePost(uri);
     await getComments(post?._id);
   };
-
+  useEffect(() => {
+    getComments();
+  }, []);
   return (
     <div className='mb-2 bg-primary p-4 rounded-xl'>
       <div className='flex gap-3 items-center mb-2'>
@@ -225,7 +240,7 @@ const PostCard = ({ post, user, deletePost, likePost, id }) => {
 
         <div className='w-full flex justify-between'>
           <div className=''>
-            <Link to={'/profile/' + post?.userId?._id}>
+            <Link to={'/trip/user/' + post.user}>
               <p className='font-medium text-lg text-ascent-1'>{post?.user}</p>
             </Link>
             <span className='text-ascent-2'>
@@ -256,6 +271,24 @@ const PostCard = ({ post, user, deletePost, likePost, id }) => {
               </Carousel.Item>
             ))}
           </Carousel> */}
+          <div className='h-[30rem] mb-8'>
+            {Array.isArray(post.image) ? (
+              <Slider {...settings}>
+                {post.image.map((image, index) => (
+                  <div key={index}>
+                    <img
+                      src={image}
+                      alt={`Image ${index + 1}`}
+                      className='max-h-[30rem] w-auto mx-auto'
+                    />
+                  </div>
+                ))}
+              </Slider>
+            ) : (
+              <p>post.image is not an array</p>
+            )}
+          </div>
+
           <div className='font-bold'>
             {showAll === post?._id
               ? post?.description
@@ -264,7 +297,7 @@ const PostCard = ({ post, user, deletePost, likePost, id }) => {
             {post?.description?.length > 301 &&
               (showAll === post?._id ? (
                 <span
-                  className='text-blue ml-2 font-mediu cursor-pointer'
+                  className='text-blue ml-2 font-medium cursor-pointer'
                   onClick={() => setShowAll(0)}
                 >
                   Show Less
@@ -310,28 +343,28 @@ const PostCard = ({ post, user, deletePost, likePost, id }) => {
       >
         <p
           className='flex gap-2 items-center text-base cursor-pointer'
-          onClick={() => handleLike()}
+          onClick={() => handleLike('/post/like/' + post._id)}
         >
-          {post?.likes?.includes(user?._id) ? (
+          {post.likes.includes(user.user._id) ? (
             <BiSolidLike size={20} color='blue' />
           ) : (
             <BiLike size={20} />
           )}
-          {post?.likes?.length} Likes
+          {post?.likes?.length} Likes ;
         </p>
 
         <p
           className='flex gap-2 items-center text-base cursor-pointer'
           onClick={() => {
             setShowComments(showComments === post._id ? null : post._id);
-            getComments(post?._id);
+            getComments(post._id);
           }}
         >
           <BiComment size={20} />
           {post?.comments?.length} Comments
         </p>
 
-        {user?._id === post?.userId?._id && (
+        {user.user._id === post.user && (
           <div
             className='flex gap-1 items-center text-base text-ascent-1 cursor-pointer'
             onClick={() => deletePost(post?._id)}
@@ -343,7 +376,7 @@ const PostCard = ({ post, user, deletePost, likePost, id }) => {
       </div>
 
       {/* COMMENTS */}
-      {showComments === post?._id && (
+      {showComments === post._id && (
         <div className='w-full mt-4 border-t border-[#66666645] pt-4 '>
           <CommentForm
             user={user}
@@ -353,14 +386,14 @@ const PostCard = ({ post, user, deletePost, likePost, id }) => {
 
           {loading ? (
             <Loading />
-          ) : comments?.length > 0 ? (
-            comments?.map((comment) => (
+          ) : comments.length > 0 ? (
+            comments.map((comment) => (
               <div className='w-full py-2' key={comment?._id}>
                 <div className='flex gap-3 items-center mb-1'>
                   <Link to={'/profile/' + comment?.userId?._id}>
                     <img
                       src={comment?.userId?.profileUrl ?? NoProfile}
-                      alt={comment?.userId?.firstName}
+                      // alt={comment?.userId.firstName}
                       className='w-10 h-10 rounded-full object-cover'
                     />
                   </Link>
@@ -377,7 +410,7 @@ const PostCard = ({ post, user, deletePost, likePost, id }) => {
                 </div>
 
                 <div className='ml-12'>
-                  <p className='text-ascent-2'>{comment?.comment}</p>
+                  <p className='text-ascent-2'>{comment.description}</p>
 
                   <div className='mt-2 flex gap-6'>
                     <p className='flex gap-2 items-center text-base text-ascent-2 cursor-pointer'>
