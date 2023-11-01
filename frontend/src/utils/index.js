@@ -19,6 +19,7 @@ export const apiRequest = async ({ url, token, data, method }) => {
         'Content-Type': 'application/json',
       },
     });
+    
     return result.data;
   } catch (error) {
     const err = error.response.data;
@@ -71,6 +72,7 @@ export const handleFileUpload = async (uploadFiles) => {
 // };
 
 export const fetchPosts = async (token, dispatch, uri, data) => {
+ console.log()
   try {
     const res = await apiRequest({
       url: uri || '/post',
