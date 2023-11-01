@@ -50,6 +50,7 @@ const Home = () => {
 
   const fetchPost = async () => {
     await fetchPosts(user?.token, dispatch);
+  
     setLoading(false);
   };
 

@@ -25,6 +25,7 @@ const Login = () => {
   });
 
   const onSubmit = async (data) => {
+    
     setIsSubmitting(true);
     try {
       const res = await apiRequest({
@@ -32,7 +33,7 @@ const Login = () => {
         data: data,
         method: 'POST',
       });
-
+   
       if (res?.status === 'failed') {
         setErrMsg(res);
       } else {

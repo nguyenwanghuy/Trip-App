@@ -1,5 +1,9 @@
 import React, { useContext, useState, useEffect } from 'react';
 
+import { Tabs } from 'antd';
+// import userAPI from '../api/userAPI';
+// import AuthContext from '../context/authContext';
+// import ProfileHeaderCard from '../components/ProfileHeaderCard';
 import NoProfile from '../assets/NoProfile.jpg';
 import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -8,7 +12,10 @@ import FriendsCard from '../components/FriendsCard';
 import PostCard from '../components/PostCard';
 import { NavBar } from '../components';
 import { apiRequest } from '../utils';
-
+import PostProfile from '../components/details/PostProfile';
+import IntroduceProfile from '../components/details/IntroduceProfile';
+import FriendsProfile from '../components/details/FriendsProfile';
+import ImagesProfile from '../components/details/ImagesProfile';
 const Profile = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
@@ -67,8 +74,8 @@ const Profile = () => {
     const file = e.target.files[0];
     setSelectedFile(file);
   };
-  const handleDelete = () => {};
-  const handleLikePost = () => {};
+  const handleDelete = () => { };
+  const handleLikePost = () => { };
   return (
     <div>
       <div className='home w-full px-0 lg:px-10 pb-20 2xl:px-20 bg-bgColor  h-screen overflow-y-auto'>
@@ -90,29 +97,35 @@ const Profile = () => {
           <div className='font-bold text-2xl text-ascent-1'>
             {userInfo.username}
           </div>
+          {/* tab in here */}
+          oke   <Tabs
+            defaultActiveKey="1"
+            items={[
+              {
+                label: 'Bài viết',
+                key: '1',
+                children: <PostProfile/>,
+              },
+              {
+                label: 'Giới thiệu',
+                key: '2',
+                children: <IntroduceProfile/>,
+              },
+              {
+                label: 'Bạn bè',
+                key: '3',
+                children: <FriendsProfile/>,
+              },
+              {
+                label: 'Ảnh',
+                key: '4',
+                children: <ImagesProfile/>,
+              },
+            ]}
+          />
         </div>
-
-        <div className='w-full flex  pt-5 pb-10 h-full'>
-          <div className='w-full flex-1 h-full bg-orimary flex flex-col '>
-            {loading ? (
-              <Loading />
-            ) : posts?.length > 0 ? (
-              posts?.map((post) => (
-                <PostCard
-                  post={post}
-                  key={post?._id}
-                  user={user}
-                  deletePost={handleDelete}
-                  likePost={handleLikePost}
-                />
-              ))
-            ) : (
-              <div className='flex w-full h-full items-center justify-center'>
-                <p className='text-lg text-ascent-2'>No Post Available</p>
-              </div>
-            )}
-          </div>
-        </div>
+        
+     
       </div>
     </div>
   );
