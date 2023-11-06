@@ -4,7 +4,7 @@ const initialState = {
   user: JSON.parse(window?.localStorage.getItem('user')) ?? {},
   edit: false,
 };
-console.log(initialState)
+// console.log(initialState)
 const userSlice = createSlice({
   name: 'user',
   initialState,

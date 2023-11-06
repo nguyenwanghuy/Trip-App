@@ -10,9 +10,7 @@ const router = express.Router();
 router.use(authMiddleware);
 //http://localhost:8001/trip/post
 router.get('/', PostCtrl.getAllPosts); // lất tất cả bài post
-
 router.post('/like/:idPost', PostCtrl.likePost); // like post
-
 router.post('/',validationMiddleware(postSchema),PostCtrl.createPost); // tạo 1 bài post
 router.get('/:id/users', PostCtrl.getPost ); // get  id post user
 router.get('/:id', PostCtrl.getPostById ); // get post by user

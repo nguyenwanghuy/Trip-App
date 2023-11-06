@@ -26,7 +26,7 @@ import PostForm from '../components/PostForm';
 const Home = () => {
   const { user } = useSelector((state) => state.user);
   const { posts } = useSelector((state) => state.posts);
-  console.log(posts);
+  // console.log(posts);
   const [friendRequest, setFriendRequest] = useState(requests);
   const [suggestedFriends, setSuggestedFriends] = useState(suggest);
   const [errMsg, setErrMsg] = useState('');
@@ -50,6 +50,7 @@ const Home = () => {
 
   const fetchPost = async () => {
     await fetchPosts(user?.token, dispatch);
+   
   
     setLoading(false);
   };
@@ -59,14 +60,10 @@ const Home = () => {
     setErrMsg('');
 
     try {
-      const uploadedFiles = await Promise.all(
-        file.map(async (file) => {
-          const uri = await handleFileUpload(file);
-          return uri;
-        }),
-      );
-
-      const newData = { ...data, image: uploadedFiles };
+      const uri = await handleFileUpload(file);
+      
+console.log(uri);
+      const newData = { ...data, image: uri };
 
       const res = await apiRequest({
         url: '/post',

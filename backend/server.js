@@ -3,6 +3,8 @@ import "dotenv/config";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import router from './routes/index.js';
+import { Server } from 'socket.io';
+import http from 'http';
 import { connectToDatabase } from './configs/db.js';
 import {errorHandlerMiddleware} from './middlewares/error.middleware.js'
 
@@ -13,24 +15,43 @@ const whitelist = ['http://localhost:3000'];
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
+    if (whitelist.indexOf(origin) !== -1 || !origin) {
+      // Cho phép yêu cầu từ whitelist hoặc yêu cầu không có origin (đối với các yêu cầu từ cùng một nguồn)
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
 };
+//http server
+const server = http.createServer(app);
+//socket
+const io = new Server(server, {
+  cors: corsOptions,
+});
+io.on('connection',(socket)=>{
+  // console.log('client connected', socket.id)
+  //handle like
+  socket.on('like', (data)=>{
+    // console.log(data);
+    io.emit('like',data)
+  })
+  //disconnect
+  socket.on('disconnect', ()=>{
+    // console.log('client disconnected')
+  });
+})
 // connect to database
 connectToDatabase()
 //middleware
 app.use(express.json());
-app.use(cors('*'));
+app.use(cors(corsOptions));
 app.use(cookieParser());
 //routing
 app.use('/trip', router)
 //Error handler
 app.use(errorHandlerMiddleware)
 
-app.listen(PORT, ()=> {
+server.listen(PORT, ()=> {
     console.log(`listening on port ${PORT}`);
 })

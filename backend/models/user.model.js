@@ -3,20 +3,22 @@ import mongoose from "mongoose";
 const UserSchema = new mongoose.Schema({
     fullname: {
         type: String,
-        required: true,
+        required: [true, "Full Name is Required!"],
     },
     username: {
         type: String,
-        required: true,
+        required: [true, "User Name is Required!"],
     },
     email: {
         type: String,
-        required: true,
+        required: [true, " Email is Required!"],
         unique: true,
     },
     password: {
         type: String,
-        required: true,
+        required: [true, "Password is Required!"],
+        minlength: [6, "Password length should be greater than 6 character"],
+        select: true,
     },
     avatar: {
         type: String,
@@ -36,6 +38,7 @@ const UserSchema = new mongoose.Schema({
     },
     friends:{
         type: Array
+        
     },
 }, { timestamps: true })
 

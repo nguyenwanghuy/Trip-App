@@ -51,7 +51,7 @@ const createPost = async (req, res) => {
     username: username
     
   })
-  // console.log(newPost._id)
+  console.log(image)
 
   //save the new post
   await newPost.save();
@@ -189,7 +189,6 @@ const likePost = async (req, res) => {
       post.likes.push(userId);
     }
     const updatePost = await post.save();
-
     res.status(201).json({
       data: updatePost,
       message: 'Like or unlike successfully',
