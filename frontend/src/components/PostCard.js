@@ -11,6 +11,8 @@ import { apiRequest } from '../utils';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
+import { io } from 'socket.io-client';
+
 
 const getPostComments = async (id, token) => {
   try {
@@ -192,14 +194,14 @@ const CommentForm = ({ user, id, replyAt, getComments }) => {
   );
 };
 
-const PostCard = ({ post, user, deletePost, likePost, id }) => {
+const PostCard = ({ post, user, deletePost, likePost, id  }) => {
   const [showAll, setShowAll] = useState(0);
   const [showReply, setShowReply] = useState(0);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [replyComments, setReplyComments] = useState(0);
   const [showComments, setShowComments] = useState(0);
-
+  const [_post,setPost] = useState(post) // tạo state để lưu trữ trong post
   const settings = {
     dots: true,
     infinite: true,
@@ -220,13 +222,50 @@ const PostCard = ({ post, user, deletePost, likePost, id }) => {
       setLoading(false);
     }
   };
+  const socket = io('http://localhost:8001');
+  useEffect(() => {
+    socket.on('like', (data) => {
+      setPost((prev) => {
+        if (prev && prev._id === data.postId) {
+          const likes = prev.likes ?? [];
+  
+          if (likes.includes(data.from)) {
+            return {
+              ...prev,
+              likes: likes.filter((id) => id !== data.from),
+            };
+          } else {
+            return {
+              ...prev,
+              likes: [...likes, data.from],
+            };
+          }
+        }
+        return prev;
+      });
+    });
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+  const userId = user?.user?._id; 
   const handleLike = async (uri) => {
     await likePost(uri);
     await getComments(post?._id);
+    // Gửi sự kiện like
+  if(userId) {
+    const ownerId = _post.user;
+    // console.log(ownerId);
+    if(ownerId){
+      socket.emit('like', { postId: post._id , from: userId, to: ownerId});
+    }
+  }
   };
+  
   useEffect(() => {
     getComments();
   }, []);
+
   return (
     <div className='mb-2 bg-primary p-4 rounded-xl'>
       <div className='flex gap-3 items-center mb-2'>
@@ -341,16 +380,17 @@ const PostCard = ({ post, user, deletePost, likePost, id }) => {
         className='mt-4 flex justify-between items-center px-3 py-2 text-ascent-2
       text-base border-t border-[#66666645]'
       >
+        {/* nút like */}
         <p
           className='flex gap-2 items-center text-base cursor-pointer'
-          onClick={() => handleLike('/post/like/' + post._id)}
+          onClick={() => handleLike('/post/like/' + _post._id)}
         >
-          {post.likes.includes(user.user._id) ? (
+          {_post.likes.includes(user.user._id) ? (
             <BiSolidLike size={20} color='blue' />
           ) : (
             <BiLike size={20} />
           )}
-          {post?.likes?.length} Likes ;
+          {_post?.likes?.length} Likes ;
         </p>
 
         <p
