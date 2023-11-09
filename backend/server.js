@@ -1,8 +1,10 @@
 import express from 'express';
 import "dotenv/config";
 import cors from 'cors';
-import { connectToDatabase } from './configs/db.js';
+import cookieParser from 'cookie-parser';
 import router from './routes/index.js';
+import { connectToDatabase } from './configs/db.js';
+import {errorHandlerMiddleware} from './middlewares/error.middleware.js'
 
 const app = express();
 const PORT = 8001;
@@ -23,8 +25,11 @@ connectToDatabase()
 //middleware
 app.use(express.json());
 app.use(cors('*'));
+app.use(cookieParser());
 //routing
 app.use('/trip', router)
+//Error handler
+app.use(errorHandlerMiddleware)
 
 app.listen(PORT, ()=> {
     console.log(`listening on port ${PORT}`);

@@ -13,6 +13,8 @@ const authAPI = {
   getAllComments: () => axiosInstance.get('/comment'),
   getAllVideos: () => axiosInstance.get('/video'),
   addVideo: (values) => axiosInstance.post('/video/upload', values),
+
+  getPostById: (id) => axiosInstance.get(`/post/${id}`)
 };
 
 export default authAPI;

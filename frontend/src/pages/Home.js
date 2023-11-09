@@ -8,6 +8,7 @@ import {
   ProfileCard,
   TextInput,
   NavBar,
+  PostForm,
 } from '../components';
 import { suggest, requests } from '../assets/data';
 import { Link } from 'react-router-dom';
@@ -21,7 +22,6 @@ import {
   handleFileUpload,
   likePost,
 } from '../utils';
-import PostForm from '../components/PostForm';
 
 const Home = () => {
   const { user } = useSelector((state) => state.user);
@@ -50,6 +50,7 @@ const Home = () => {
 
   const fetchPost = async () => {
     await fetchPosts(user?.token, dispatch);
+
     setLoading(false);
   };
 
@@ -58,14 +59,15 @@ const Home = () => {
     setErrMsg('');
 
     try {
-      const uploadedFiles = await Promise.all(
-        file.map(async (file) => {
-          const uri = await handleFileUpload(file);
-          return uri;
-        }),
-      );
+      const uploadedFiles = [];
+      for (const files of file) {
+        const uri = await handleFileUpload(files);
+        console.log(uri);
+        uploadedFiles.push(uri);
+      }
 
       const newData = { ...data, image: uploadedFiles };
+      console.log(newData);
 
       const res = await apiRequest({
         url: '/post',

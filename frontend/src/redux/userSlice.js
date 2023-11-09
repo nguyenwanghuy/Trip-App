@@ -4,7 +4,6 @@ const initialState = {
   user: JSON.parse(window?.localStorage.getItem('user')) ?? {},
   edit: false,
 };
-
 const userSlice = createSlice({
   name: 'user',
   initialState,
@@ -18,7 +17,9 @@ const userSlice = createSlice({
       localStorage?.removeItem('user');
     },
     updateProfile(state, action) {
-      state.edit = action.payload;
+      state.user.avatar = action.payload.avatar;
+      state.edit = action.payload.edit;
+      localStorage.setItem('user', JSON.stringify(state.user));
     },
   },
 });

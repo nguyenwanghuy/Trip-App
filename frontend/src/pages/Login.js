@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { Button, Loading, TextInput } from '../components';
@@ -11,6 +11,7 @@ const Login = () => {
   const [show, setShow] = useState(false);
   const [errMsg, setErrMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const dispatch = useDispatch();
 
@@ -24,24 +25,45 @@ const Login = () => {
     mode: 'onChange',
   });
 
-  const onSubmit = async (data) => {
-    setIsSubmitting(true);
-    try {
-      const res = await apiRequest({
-        url: '/auth/login',
-        data: data,
-        method: 'POST',
-      });
+  const loginUser = (data) => {
+    return async (dispatch) => {
+      try {
+        const loginResponse = await apiRequest({
+          url: '/auth/login',
+          data: data,
+          method: 'POST',
+        });
 
-      if (res?.status === 'failed') {
-        setErrMsg(res);
-      } else {
-        setErrMsg('');
-        const { token, ...payload } = res;
-        dispatch(userLogin({ token, ...payload }));
-        window.location.replace('/');
+        if (loginResponse?.status === 'failed') {
+          setErrMsg(loginResponse.message);
+        } else {
+          const token = loginResponse.token;
+          const profileResponse = await apiRequest({
+            url: '/auth/me',
+            token: token,
+            method: 'GET',
+          });
+          if (profileResponse) {
+            const payload = {
+              token,
+              ...profileResponse,
+            };
+
+            dispatch(userLogin(payload));
+            navigate('/');
+          }
+        }
+        setIsSubmitting(false);
+      } catch (error) {
+        console.error('Login error:', error);
+        setIsSubmitting(false);
       }
-      setIsSubmitting(false);
+    };
+  };
+
+  const onSubmit = async (data) => {
+    try {
+      dispatch(loginUser(data));
     } catch (error) {
       console.log(error);
       setIsSubmitting(false);
@@ -93,7 +115,7 @@ const Login = () => {
               </button>
             </div>
 
-            {errMsg?.message && (
+            {errMsg.message && (
               <span
                 className={`text-sm ${
                   errMsg?.status == 'failed'

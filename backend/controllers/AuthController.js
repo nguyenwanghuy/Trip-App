@@ -1,24 +1,27 @@
-import jwt from 'jsonwebtoken';
+import jwt, { decode } from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import UserModel from '../models/user.model.js';
+import RefreshTokenModel from '../models/refreshTokenModel.js';
 const login = async (req, res) => {
   const { username, password } = req.body;
-
   try {
     if (!username || !password) {
       return res.status(400).json({
         message: 'Missing required keys',
       });
     }
-    const user = await UserModel.findOne({ username });
-    if (!user) {
+    const existingUser = await UserModel.findOne({ username });
+    if (!existingUser) {
       return res.status(400).json({
         message: 'Invalid credentials!',
       });
     }
-    // console.log(user)
+    // console.log(existingUser)
     //check password
-    const isMatchPassword = await bcrypt.compare(password, user.password);
+    const isMatchPassword = await bcrypt.compare(
+      password,
+      existingUser.password,
+    );
     if (!isMatchPassword) {
       return res.status(401).json({
         message: 'Invalid credentials!',
@@ -26,17 +29,32 @@ const login = async (req, res) => {
     }
     //token
     const jwtPayload = {
-      id: user.id,
-      username: user.username,
-      avatar: user.avatar,
+      id: existingUser.id,
+      username: existingUser.username,
+      avatar: existingUser.avatar,
+      password: existingUser.password,
     };
     const token = jwt.sign(jwtPayload, process.env.SECRET_KEY, {
-      expiresIn: '7days',
+      expiresIn: '7d',
+    });
+    const refreshToken = jwt.sign(
+      jwtPayload,
+      process.env.SECRET_KEY_REFRESH_TOKEN,
+      {
+        expiresIn: '7d',
+      },
+    );
+    //STORE REFRESH TOKEN IN COOKIE
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: false, // khi nào deploy thì chuyển thành true
+      path: '/',
+      sameSite: 'strict',
     });
 
     res.json({
       token: token,
-      user,
+      // user: existingUser,
       message: 'Login successfully',
     });
   } catch (error) {
@@ -133,10 +151,87 @@ const getMeProfile = async (req, res) => {
     res.status(500).json(error);
   }
 };
+const requestRefreshToken = async (req, res) => {
+  // Khi nào access token hết hạn thì lấy refresh token để tạo một access token mới
+  // Lấy refresh token từ cookies
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) {
+    return res.status(401).json({
+      message: 'You are not authenticated',
+    });
+  }
+
+  try {
+    // Xác minh refresh token
+    jwt.verify(
+      refreshToken,
+      process.env.SECRET_KEY_REFRESH_TOKEN,
+      async (err, decoded) => {
+        if (err) {
+          return res.status(401).json({
+            message: 'Invalid refresh token',
+          });
+        }
+        // Tạo access token mới
+        const jwtPayload = {
+          id: decoded.id,
+          username: decoded.username,
+          password: decoded.password,
+        };
+        const newAccessToken = jwt.sign(jwtPayload, process.env.SECRET_KEY, {
+          expiresIn: '1h',
+        });
+
+        // Tạo refresh token mới
+        const newRefreshToken = jwt.sign(
+          jwtPayload,
+          process.env.SECRET_KEY_REFRESH_TOKEN,
+          {
+            expiresIn: '7d',
+          },
+        );
+        // Lưu trữ refresh token mới trong cookie
+        res.cookie('refreshToken', newRefreshToken, {
+          httpOnly: true,
+          secure: false, // Khi triển khai, hãy chuyển thành true
+          path: '/',
+          sameSite: 'strict',
+        });
+
+        try {
+          // Lưu refresh token mới trong db
+          const refreshTokenEntry = new RefreshTokenModel({
+            refreshToken: newRefreshToken,
+            userId: decoded.id,
+          });
+          await refreshTokenEntry.save();
+
+          res.status(200).json({
+            accessToken: newAccessToken,
+          });
+        } catch (error) {
+          console.log(error);
+          res.status(500).json(error);
+        }
+      },
+    );
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+const logout = async (req, res) => {
+  res.clearCookie('refreshToken');
+  res.status(200).json({
+    message: 'Logged out',
+  });
+};
 const AuthCtrl = {
   login,
   register,
   getMe,
   getMeProfile,
+  requestRefreshToken,
+  logout,
 };
 export default AuthCtrl;

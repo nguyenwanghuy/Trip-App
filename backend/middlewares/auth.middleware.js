@@ -1,23 +1,51 @@
-import jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken'
+import PostModel from '../models/postModel.js';
 
-export const authMiddleware = (req, res, next) => {
-  const token = req.headers['x-access-token'];
-
-  if (!token) {
-    return res.status(400).json({
-      message: 'Token is not provided',
+ export const authMiddleware = (req, res, next) => {
+    const token = req.headers["x-access-token"];
+    
+    if (!token) {
+      return res.status(400).json({
+        message: "Token is not provided",
+      });
+    }
+  
+    try {
+      const decoded = jwt.verify(token,process.env.SECRET_KEY)
+      req.user = decoded;
+      next()
+    } catch (error) {
+      return res.status(400).json({
+          error
+      })
+    }
+  };
+  export const verifyTokenPost = (req, res, next) => {
+    authMiddleware(req, res,async() => {
+      const postId = req.params.id;
+      const post = await PostModel.findById(postId);
+      if (!post) {
+        return res.status(404).json({ message: 'Post not found' });
+      }
+      const postUserId = post.user;
+      
+      // console.log('req.user.id:', req.user.id);
+      // console.log('postUserId:', postUserId);
+      if (req.user.id === postUserId.toString()) {
+        next();
+      } else {
+        return res.status(403).json({ message: 'You are not allowed to delete this post' });
+      }
     });
-  }
+  };
 
-  try {
-    const decoded = jwt.verify(token, process.env.SECRET_KEY);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    return res.status(400).json({
-      error,
-    });
-  }
-};
-// tạo 1 mdw mới lấy token giống 456789 cũng vất vào try ca để author
-// refesh tokens
+  export const verifyTokenUser = (req, res,next) => {
+    authMiddleware(req, res,()=>{
+      if(req.user.id === req.params.id) {
+        next();
+      } else{
+        res.status(403).json("You're not allowed to do that user!");
+      }
+    })
+  };
+ 

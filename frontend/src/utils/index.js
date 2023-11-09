@@ -19,6 +19,7 @@ export const apiRequest = async ({ url, token, data, method }) => {
         'Content-Type': 'application/json',
       },
     });
+
     return result.data;
   } catch (error) {
     const err = error.response.data;
@@ -27,9 +28,36 @@ export const apiRequest = async ({ url, token, data, method }) => {
   }
 };
 
+export const refreshToken = () => async (dispatch, getState) => {
+  try {
+    const refreshToken = getState().user.refreshToken;
+    if (refreshToken) {
+      // Make an API request to refresh the access token using the refresh token
+      const response = await apiRequest({
+        url: '/auth/login', // Replace with your server's endpoint
+        token: refreshToken,
+        method: 'POST',
+      });
+
+      // Update the user and access token in the store
+      if (response && response.accessToken) {
+        dispatch(
+          userSlice.actions.login({
+            user: response.user,
+            refreshToken,
+            accessToken: response.accessToken,
+          }),
+        );
+      }
+    }
+  } catch (error) {
+    console.error('Token refresh failed', error);
+  }
+};
+
 export const handleFileUpload = async (uploadFiles) => {
   if (!Array.isArray(uploadFiles)) {
-    uploadFiles = [uploadFiles]; // Chuyển đổi thành mảng nếu không phải mảng
+    uploadFiles = [uploadFiles];
   }
   const uploadPromises = uploadFiles.map(async (uploadFile) => {
     const formData = new FormData();
@@ -53,24 +81,8 @@ export const handleFileUpload = async (uploadFiles) => {
   return uploadedFileURLs;
 };
 
-// export const handleFileUpload = async (uploadFile) => {
-//   const formData = new FormData();
-//   formData.append('file', uploadFile);
-//   formData.append('upload_preset', 'socialmedia');
-//   console.log(formData);
-
-//   try {
-//     const response = await axios.post(
-//       `http://api.cloudinary.com/v1_1/dmlc8hjzu/image/upload/`,
-//       formData,
-//     );
-//     return response.data.secure_url;
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
-
 export const fetchPosts = async (token, dispatch, uri, data) => {
+  console.log();
   try {
     const res = await apiRequest({
       url: uri || '/post',
@@ -131,16 +143,16 @@ export const getUserInfo = async (id, token) => {
   }
 };
 
-export const viewUserProfile = async (token, id) => {
+export const searchUser = async (token, query) => {
   try {
     const res = await apiRequest({
-      url: '/user/',
+      url: `/user/search/s?u=${query}`,
       token: token,
-      method: 'POST',
-      data: { id },
+      method: 'GET',
     });
-    return;
+    return res;
   } catch (error) {
-    console.log(error);
+    logError(error);
+    throw error;
   }
 };

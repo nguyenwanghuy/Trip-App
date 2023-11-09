@@ -55,7 +55,7 @@ const PostModal = ({
 
   return (
     <div>
-      <Button onClick={showModal}>Open Modal with async logic</Button>
+      <Button onClick={showModal}>Share your experience!</Button>
       <Modal
         title='Title'
         open={open}

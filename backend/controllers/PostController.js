@@ -16,7 +16,14 @@ const getAllPosts = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const size = parseInt(req.query.size) || 10;
     const skip = (page - 1) * size;
-    const posts = await PostModel.find().sort({ createdAt:-1 }).skip(skip).limit(size);
+    const posts = await PostModel.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(size)
+      .populate({
+        path: 'user',
+        select: 'username avatar',
+      });
     const totalPosts = await PostModel.countDocuments();
     const totalPages = Math.ceil(totalPosts / size);
     res.json({
@@ -118,7 +125,10 @@ const uploadsImage = async (req, res) => {
 const getPost = async (req, res) => {
   try {
     const { id } = req.params;
-    const post = await PostModel.findById(id);
+    const post = await PostModel.findById(id).populate({
+      path: 'user',
+      select: 'username avatar',
+    });
     res.status(200).json({
       data: post,
     });
@@ -258,6 +268,23 @@ const checkViewPrivate = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+const getPostById = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const postsByUser = await PostModel.find({ user: userId }).populate({
+      path: 'user',
+      select: 'username avatar',
+    });
+    res.status(200).json({
+      posts: postsByUser,
+      message: 'Success',
+    });
+  } catch (error) {
+    res.status(404).send({
+      message: error.message,
+    });
+  }
+};
 const PostCtrl = {
   getAllPosts,
   createPost,
@@ -268,5 +295,6 @@ const PostCtrl = {
   likePost,
   checkViewFriend,
   checkViewPrivate,
+  getPostById,
 };
 export default PostCtrl;

@@ -1,13 +1,19 @@
 import React, { useContext, useState, useEffect } from 'react';
-
-import NoProfile from '../assets/NoProfile.jpg';
+import axios from 'axios';
+import { Tabs } from 'antd';
 import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import Loading from '../components/Loading';
 import FriendsCard from '../components/FriendsCard';
-import PostCard from '../components/PostCard';
+import PostCard from '../components/index';
 import { NavBar } from '../components';
-import { apiRequest } from '../utils';
+import { apiRequest, handleAvatarUpload } from '../utils';
+import PostProfile from '../components/details/PostProfile';
+import IntroduceProfile from '../components/details/IntroduceProfile';
+import FriendsProfile from '../components/details/FriendsProfile';
+import ImagesProfile from '../components/details/ImagesProfile';
+import { Button, Modal } from 'antd'; // Import Button and Modal
+import { HiOutlineCamera } from 'react-icons/hi2';
 
 const Profile = () => {
   const { id } = useParams();
@@ -15,9 +21,11 @@ const Profile = () => {
   const { user } = useSelector((state) => state.user);
   const { posts } = useSelector((state) => state.posts);
   const [userInfo, setUserInfo] = useState({});
-  // const [loading, setLoading] = useState(false);
+  console.log(userInfo);
+  const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [loading, setLoading] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   const fetchUserData = async () => {
     try {
@@ -26,13 +34,42 @@ const Profile = () => {
         token: user.token,
         method: 'GET',
       });
-      console.log(res.data);
       setUserInfo(res.data);
-      console.log(userInfo);
       setLoading(false);
     } catch (error) {
-      console.error(error);
       setLoading(false);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (selectedFile) {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      try {
+        const response = await axios.post(
+          'http://localhost:8001/trip/user/upload-avatar',
+          formData,
+          {
+            headers: {
+              'x-access-token': user.token,
+              'Content-Type': 'multipart/form-data',
+            },
+          },
+        );
+
+        if (response.data.message === 'Uploading avatar successfully') {
+          setUserInfo((prevUserInfo) => ({
+            ...prevUserInfo,
+            avatar: response.data.avatar,
+          }));
+          setModalVisible(false);
+        } else {
+          console.error('Avatar upload failed');
+        }
+      } catch (error) {
+        console.error(error);
+      }
     }
   };
 
@@ -40,38 +77,32 @@ const Profile = () => {
     fetchUserData();
   }, [id]);
 
-  // const {
-  //   auth: { user },
-  //   fetchCurrentUser,
-  // } = useContext(AuthContext);
-
-  // const handleUpload = async () => {
-  //   if (!selectedFile) return;
-
-  //   try {
-  //     setLoading(true);
-  //     const formData = new FormData();
-  //     formData.append('avatar', selectedFile);
-
-  //     // Make the API request to upload the file
-  //     await userAPI.uploadAvatar(formData);
-  //     await fetchCurrentUser();
-  //   } catch (error) {
-  //     console.error(error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    setSelectedFile(file);
+    if (file) {
+      setSelectedFile(file);
+    }
   };
+
   const handleDelete = () => {};
+
   const handleLikePost = () => {};
+
+  const showModal = () => {
+    setModalVisible(true);
+  };
+
+  const handleOk = () => {
+    setModalVisible(false);
+  };
+
+  const handleCancel = () => {
+    setModalVisible(false);
+  };
+
   return (
     <div>
-      <div className='home w-full px-0 lg:px-10 pb-20 2xl:px-20 bg-bgColor  h-screen overflow-y-auto'>
+      <div className='home w-full px-0 lg:px-10 pb-20 2xl:px-20 bg-bgColor h-screen overflow-y-auto'>
         <NavBar />
 
         <div className='w-full rounded-lg h-[35rem] mt-5 flex flex-col justify-between items-center lg:gap-4 pb-10 bg-primary relative'>
@@ -83,93 +114,66 @@ const Profile = () => {
           </div>
           <div className='w-48 h-48 absolute bottom-20 left-1/2 transform -translate-x-1/2 rounded-full'>
             <img
-              src={NoProfile}
-              className='w-full h-full rounded-full border-[5px] border-ascent-3 object-cover'
+              src={userInfo?.avatar}
+              className='w-full h-full rounded-full border-[5px] border-ascent-3 object-cover '
             />
+
+            {user.userInfo._id === userInfo?._id && (
+              <Button
+                type='secondary'
+                onClick={showModal}
+                className='h-[2rem] text-2xl absolute bottom-5 right-2 rounded-full bg-bgColor px-1 text-ascent-1'
+              >
+                <HiOutlineCamera />
+              </Button>
+            )}
           </div>
+
           <div className='font-bold text-2xl text-ascent-1'>
-            {userInfo.username}
+            {userInfo && userInfo.username}
           </div>
         </div>
 
-        <div className='w-full flex  pt-5 pb-10 h-full'>
-          <div className='w-full flex-1 h-full bg-orimary flex flex-col '>
-            {loading ? (
-              <Loading />
-            ) : posts?.length > 0 ? (
-              posts?.map((post) => (
-                <PostCard
-                  post={post}
-                  key={post?._id}
-                  user={user}
-                  deletePost={handleDelete}
-                  likePost={handleLikePost}
-                />
-              ))
-            ) : (
-              <div className='flex w-full h-full items-center justify-center'>
-                <p className='text-lg text-ascent-2'>No Post Available</p>
-              </div>
-            )}
-          </div>
+        <div className='bg-primary mt-7 rounded-xl px-6 py-6 '>
+          <Tabs
+            className='text-ascent-1'
+            defaultActiveKey='1'
+            items={[
+              {
+                label: 'Posts',
+                key: '1',
+                children: <PostProfile user={user} UserId={id} />,
+              },
+              {
+                label: 'Giới thiệu',
+                key: '2',
+                children: <IntroduceProfile userInfo={userInfo} />,
+              },
+              {
+                label: 'Bạn bè',
+                key: '3',
+                children: <FriendsProfile />,
+              },
+              {
+                label: 'Ảnh',
+                key: '4',
+                children: <ImagesProfile />,
+              },
+            ]}
+          />
         </div>
       </div>
+
+      <Modal
+        title='Upload Avatar'
+        visible={modalVisible}
+        onOk={handleUpload}
+        onCancel={handleCancel}
+      >
+        <input type='file' accept='image/*' onChange={handleFileChange} />
+      </Modal>
     </div>
   );
 };
 
 export default Profile;
-
-// import React, { useContext, useState } from 'react';
-// import AuthContext from '../context/authContext';
-// import userAPI from '../api/userAPI';
-
-// const Profile = () => {
-//   const [selectedFile, setSelectedFile] = useState(null);
-//   const [loading, setLoading] = useState(null);
-//   const {
-//     auth: { user },
-//     fetchCurrentUser,
-//   } = useContext(AuthContext);
-
-//   const handleUpload = async () => {
-//     if (!selectedFile) return;
-
-//     try {
-//       setLoading(true);
-//       const formData = new FormData();
-//       formData.append('avatar', selectedFile);
-
-//       // Make the API request to upload the file
-//       await userAPI.uploadAvatar(formData);
-//       await fetchCurrentUser();
-//     } catch (error) {
-//       console.error(error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const handleFileChange = (e) => {
-//     const file = e.target.files[0];
-//     setSelectedFile(file);
-//   };
-
-//   return (
-//     <div>
-//       <h1>Upload avatar</h1>
-//       {loading && <p>Upload avatar in progress...</p>}
-//       <input type='file' onChange={handleFileChange} accept='image/*' />
-//       <button onClick={handleUpload}>Upload avatar</button>
-//       <div>
-//         <img
-//           style={{ width: '200px', height: 'auto', objectFit: 'cover' }}
-//           alt='avatar'
-//           src={user?.avatar || ''}
-//         />
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Profile;

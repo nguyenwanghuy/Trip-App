@@ -12,7 +12,7 @@ import { FaTwitterSquare } from 'react-icons/fa';
 import { CiLocationOn } from 'react-icons/ci';
 import moment from 'moment';
 import NoProfile from '../assets/NoProfile.jpg';
-import { updateProfile } from '../redux/userSlice';
+import { updateProfile, userLogin } from '../redux/userSlice';
 
 const ProfileCard = ({ user }) => {
   const { user: data, edit } = useSelector((state) => state.user);
@@ -23,19 +23,18 @@ const ProfileCard = ({ user }) => {
     <div>
       <div className='w-full bg-primary flex flex-col items-center shadow-sm rounded-xl px-6 py-4 '>
         <div className='w-full flex items-center justify-between border-b pb-5 border-[#66666645]'>
-          <Link to={'/profile/' + user?._id} className='flex gap-2'>
+          <Link to={'/trip/user/' + user.user?._id} className='flex gap-2'>
             <img
-              src={user.user.avatar}
-              alt={user?.email}
+              src={user.userInfo.avatar}
+              alt={user?.username}
               className='w-14 h-14 object-cover rounded-full'
             />
-
             <div className='flex flex-col justify-center'>
               <p className='text-lg font-medium text-ascent-1'>
-                {user.user.username}
+                {user.userInfo.username}
               </p>
               <span className='text-ascent-2'>
-                {user?.profession ?? 'No Profession'}
+                {user.userInfo.profession ?? 'No Profession'}
               </span>
             </div>
           </Link>

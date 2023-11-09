@@ -1,45 +1,49 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const UserSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema(
+  {
     fullname: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
     username: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
     email: {
-        type: String,
-        required: true,
-        unique: true,
+      type: String,
+      required: true,
+      unique: true,
     },
     password: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
     avatar: {
-        type: String,
-        default: 'https://res.cloudinary.com/devatchannel/image/upload/v1602752402/avatar/avatar_cugq40.png'
+      type: String,
+      default:
+        'https://res.cloudinary.com/devatchannel/image/upload/v1602752402/avatar/avatar_cugq40.png',
     },
-    age:{
-        type: Number
+    age: {
+      type: Number,
     },
     dateOfBirth: {
-         type: Date 
+      type: Date,
     },
-    gender:{
-        type: String
+    gender: {
+      type: String,
     },
-    description:{
-        type: String
+    description: {
+      type: String,
     },
-    friends:{
-        type: Array
+    friends: {
+      type: Array,
     },
-}, { timestamps: true })
+  },
+  { timestamps: true },
+);
 
-const UserModel = mongoose.model('users', UserSchema)
-export default UserModel
+const UserModel = mongoose.model('users', UserSchema);
+export default UserModel;
 
 //upload lại
