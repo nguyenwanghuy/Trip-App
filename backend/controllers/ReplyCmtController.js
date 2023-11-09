@@ -6,7 +6,7 @@ const createReplyCmt = async (req, res) => {
         const {description} = req.body;
         const cmtId = req.params.idCmt;
         const {id}= req.user.id;
-    
+        
        const newRepltCmt = new ReplyCmtModel({
         description,
         cmtId,

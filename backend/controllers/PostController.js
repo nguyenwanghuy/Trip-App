@@ -38,6 +38,7 @@ const createPost = async (req, res) => {
   const { id, username } = req.user;
   // console.log(id)
   const currentUser = await UserModel.findById(id);
+
   // console.log(currentUser)
   if (!currentUser) {
     res.status = 400;
@@ -48,11 +49,10 @@ const createPost = async (req, res) => {
     description,
     image,
     user: id,
-    username: username
+    username: username,
+  
     
   })
-  console.log(image)
-
   //save the new post
   await newPost.save();
   res.status(201).json({
