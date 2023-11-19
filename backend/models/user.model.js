@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
 const UserSchema = new mongoose.Schema(
   {
@@ -38,14 +38,18 @@ const UserSchema = new mongoose.Schema(
     description: {
       type: String,
     },
-    friends: {
-      type: Array,
-    },
+    friends: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'users',
+      },
+    ],
+    // friends: {
+    //   type: Array,
+    // },
   },
   { timestamps: true },
 );
 
 const UserModel = mongoose.model('users', UserSchema);
 export default UserModel;
-
-//upload lại

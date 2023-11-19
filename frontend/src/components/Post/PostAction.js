@@ -19,14 +19,14 @@ const PostAction = ({
     >
       <p
         className='flex gap-2 items-center text-base cursor-pointer'
-        onClick={() => handleLike('/post/like/' + post._id)}
+        onClick={() => handleLike('/post/like/' + _post._id)}
       >
-        {post.likes.includes(user._id) ? (
+        {_post.likes.includes(user._id) ? (
           <BiSolidLike size={20} color='blue' />
         ) : (
           <BiLike size={20} />
         )}
-        {post?.likes?.length} Likes
+        {_post?.likes?.length} Likes
       </p>
 
       <p

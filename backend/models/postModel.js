@@ -17,10 +17,6 @@ const PostSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'users',
     },
-    username: {
-      type: mongoose.Schema.Types.String,
-      ref: 'users',
-    },
     comment: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -39,6 +35,11 @@ const PostSchema = new mongoose.Schema(
         ref: 'users',
       },
     ],
+    visibility: {
+      type: String,
+      enum: ['private', 'public', 'friends'],
+      default: 'public',
+    },
   },
   { timestamps: true },
 );

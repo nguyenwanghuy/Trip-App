@@ -87,14 +87,38 @@ const addRemoveFriend = async (req, res) => {
 
 const searchUsers = async (req, res) => {
   try {
-    const { username } = req.params;
-    const searchUsers = await UserModel.find({ username: username }).select(
-      'username avatar',
-    );
+    const searchTerm = req.query.term?.toString();
+    const searchUsers = await UserModel.find({
+      username: { $regex: searchTerm },
+    }).select('username avatar');
     if (!searchUsers)
       return res.status(404).json({ message: 'User not found' });
+    const searchContent = await PostModel.find({
+      content: { $regex: searchTerm },
+    });
+    if (!searchContent)
+      return res.status(404).json({ message: 'Post not found' });
     res.status(200).json({
       searchUsers: searchUsers,
+      searchContent: searchContent,
+    });
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+};
+
+const suggestUser = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const user = await UserModel.findById(id);
+    const users = await UserModel.find().select('username avatar -password');
+
+    const nonFriend = users.filter(
+      (u) => u.id !== user.id && !user.friends.includes(u.id),
+    );
+    const randomUsers = getRandomElements(nonFriend, 2);
+    res.status(200).send({
+      data: randomUsers,
     });
   } catch (error) {
     res.status(500).send({ message: error.message });
@@ -110,6 +134,7 @@ const UserCtrl = {
   getUser,
   addRemoveFriend,
   searchUsers,
+  suggestUser,
 };
 
 export default UserCtrl;

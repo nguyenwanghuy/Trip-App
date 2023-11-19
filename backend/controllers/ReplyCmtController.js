@@ -1,5 +1,4 @@
 import CommentModel from '../models/commentModel.js';
-import ReplyCmtModel from '../models/replyCmtModel.js';
 
 const createReplyCmt = async (req, res) => {
   const id = req.user.id;
