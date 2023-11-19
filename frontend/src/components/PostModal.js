@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { Button, Modal } from 'antd';
+import { Button, Modal, Select } from 'antd';
 import { useForm } from 'react-hook-form';
 import TextInput from './TextInput';
 import { BsFiletypeGif, BsPersonFillAdd } from 'react-icons/bs';
 import { BiImages, BiSolidVideo } from 'react-icons/bi';
-import { InboxOutlined } from '@ant-design/icons';
 import FriendListDropdown from './FriendListDropdown';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import { Option } from 'antd/es/mentions';
 
 const PostModal = ({
   handlePostSubmit,
@@ -22,6 +22,9 @@ const PostModal = ({
   const [showFriendList, setShowFriendList] = useState(false);
   const [selectedFriends, setSelectedFriends] = useState([]);
   const [content, setContent] = useState('');
+  const [visibility, setVisibility] = useState('isPublic');
+
+  // const { Option } = Select;
 
   const {
     register,
@@ -36,20 +39,21 @@ const PostModal = ({
   };
 
   const handleOk = async () => {
-    if (file.length === 0) {
+    if (file.length === 0 || !visibility) {
       setOpen(false);
       return;
     }
-
     setConfirmLoading(true);
-
     try {
-      const data = await handleSubmit((data) =>
-        handlePostSubmit(data, selectedFriends),
-      )();
+      const data = await handleSubmit((formData) => {
+        const cleanedContent = formData.content.replace(/<\/?p>/g, '');
+        formData.content = cleanedContent;
+        handlePostSubmit(formData, selectedFriends, visibility);
+      })();
       reset();
       setFile([]);
       setContent('');
+      setVisibility(null);
       setOpen(false);
     } catch (error) {
       console.error('Error submitting post:', error);
@@ -60,6 +64,13 @@ const PostModal = ({
 
   const handleCancel = () => {
     setOpen(false);
+  };
+
+  const handleVisibilityChange = (value) => {
+    setVisibility(value);
+    if (value === 'isFriends') {
+      setOpen(true);
+    }
   };
 
   return (
@@ -89,32 +100,17 @@ const PostModal = ({
             className='bg-primary px-4 rounded-lg '
           >
             <div className='w-full items-center gap-2 py-4 border-b border-[#66666645]'>
-              <label className='flex items-center gap-1 text-base text-ascent-2 hover:text-ascent-1 cursor-pointer'>
-                <input
-                  type='checkbox'
-                  {...register('isPublic')}
-                  defaultChecked={false}
-                />
-                <span>Public</span>
-              </label>
-              <label className='flex items-center gap-1 text-base text-ascent-2 hover:text-ascent-1 cursor-pointer'>
-                <input
-                  type='checkbox'
-                  {...register('isPrivate')}
-                  defaultChecked={false}
-                />
-                <span>Private</span>
-              </label>
-              <label className='flex items-center gap-1 text-base text-ascent-2 hover:text-ascent-1 cursor-pointer'>
-                <input
-                  type='checkbox'
-                  {...register('isFriends')}
-                  defaultChecked={false}
-                  onChange={(e) => setShowFriendList(e.target.checked)}
-                />
-                <span>Friends</span>
-              </label>
-              {showFriendList && (
+              <Select
+                style={{ width: '100%' }}
+                placeholder='Select post visibility'
+                onChange={(value) => setVisibility(value)}
+                value={visibility}
+              >
+                <Option value='isPublic'>Public</Option>
+                <Option value='isPrivate'>Private</Option>
+                <Option value='isFriends'>Friends</Option>
+              </Select>
+              {visibility === 'isFriends' && (
                 <FriendListDropdown
                   friends={user.friends}
                   onSelectFriend={(selectedFriends) => {
@@ -123,7 +119,6 @@ const PostModal = ({
                   selectedFriends={selectedFriends}
                 />
               )}
-
               <TextInput
                 styles='w-full rounded-full py-5 border-none '
                 placeholder='Description...'
@@ -141,7 +136,7 @@ const PostModal = ({
                   setValue('content', value);
                   setContent(value);
                 }}
-                name='content' // Add the name attribute for registration
+                name='content'
               />
               <div className='w-full border-t border-[#66666645]'></div>
 
@@ -182,7 +177,6 @@ const PostModal = ({
                   className='hidden'
                   id='imgUpload'
                   data-max-size='5120'
-                  // accept='.jpg, .png, .jpeg, .gif'
                   accept='*'
                   multiple
                 />

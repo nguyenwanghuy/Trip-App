@@ -39,49 +39,44 @@ const PostCard = ({ post, user, deletePost, likePost, id }) => {
     }
   };
 
-  // const socket = io('http://localhost:8001');
-  // useEffect(() => {
-  //   socket.on('like', (data) => {
-  //     setPost((prev) => {
-  //       if (prev && prev._id === data.postId) {
-  //         const likes = prev.likes ?? [];
+  const socket = io('http://localhost:8001');
+  useEffect(() => {
+    socket.on('like', (data) => {
+      setPost((prev) => {
+        if (prev && prev._id === data.postId) {
+          const likes = prev.likes ?? [];
 
-  //         if (likes.includes(data.from)) {
-  //           return {
-  //             ...prev,
-  //             likes: likes.filter((id) => id !== data.from),
-  //           };
-  //         } else {
-  //           return {
-  //             ...prev,
-  //             likes: [...likes, data.from],
-  //           };
-  //         }
-  //       }
-  //       return prev;
-  //     });
-  //   });
-  //   return () => {
-  //     socket.disconnect();
-  //   };
-  // }, []);
+          if (likes.includes(data.from)) {
+            return {
+              ...prev,
+              likes: likes.filter((id) => id !== data.from),
+            };
+          } else {
+            return {
+              ...prev,
+              likes: [...likes, data.from],
+            };
+          }
+        }
+        return prev;
+      });
+    });
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
-  // const userId = user?.userInfo?._id;
-
-  // const handleLike = async (uri) => {
-  //   await likePost(uri);
-  //   await getComments(post?._id);
-  //   if (userId) {
-  //     const ownerId = _post.user;
-  //     if (ownerId) {
-  //       socket.emit('like', { postId: post._id, from: userId, to: ownerId });
-  //     }
-  //   }
-  // };
+  const userId = user?._id;
 
   const handleLike = async (uri) => {
     await likePost(uri);
     await getComments(post?._id);
+    if (userId) {
+      const ownerId = _post.user;
+      if (ownerId) {
+        socket.emit('like', { postId: post._id, from: userId, to: ownerId });
+      }
+    }
   };
 
   useEffect(() => {

@@ -58,7 +58,7 @@ const Home = () => {
     FRIENDS: 'friends',
   };
 
-  const handlePostSubmit = async (data, selectedFriends) => {
+  const handlePostSubmit = async (data, selectedFriends, visibility) => {
     setPosting(true);
     setErrMsg('');
 
@@ -73,13 +73,12 @@ const Home = () => {
       const newData = {
         ...data,
         image: uploadedFiles,
-        visibility: data.isPrivate
-          ? PostVisibility.PRIVATE
-          : data.isPublic
-          ? PostVisibility.PUBLIC
-          : data.isFriends
-          ? PostVisibility.FRIENDS
-          : PostVisibility.PUBLIC,
+        visibility:
+          visibility === 'isPrivate'
+            ? PostVisibility.PRIVATE
+            : visibility === 'isPublic'
+            ? PostVisibility.PUBLIC
+            : PostVisibility.FRIENDS,
         viewers: selectedFriends,
       };
 
@@ -100,9 +99,6 @@ const Home = () => {
         reset({
           description: '',
           content: '',
-          isPrivate: false,
-          isPublic: false,
-          isFriends: false,
         });
         setFile([]);
         setErrMsg('');
@@ -162,7 +158,7 @@ const Home = () => {
     }
   };
 
-  const getUser = async (userToken) => {
+  const getUser = async (token) => {
     try {
       const res = await getUserInfo(user.token);
       const newData = { token: user.token, ...res };

@@ -14,7 +14,7 @@ router.use(authMiddleware);
 router.get('/', PostCtrl.getAllPosts); // lất tất cả bài post
 router.post('/like/:idPost', PostCtrl.likePost); // like post
 router.post('/', validationMiddleware(postSchema), PostCtrl.createPost); // tạo 1 bài post
-router.get('/:id/users', PostCtrl.getPost); // get  id post user
+router.get('/users/:id', PostCtrl.getPost); // get  id post user
 router.get('/:id', PostCtrl.getPostById); // get post by user
 router.put('/:id', verifyTokenPost, PostCtrl.updatePost); // update post
 router.delete('/:id', verifyTokenPost, PostCtrl.deletePost); // delete post

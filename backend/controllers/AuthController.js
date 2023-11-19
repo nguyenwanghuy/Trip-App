@@ -44,16 +44,16 @@ const login = async (req, res) => {
         expiresIn: '7d',
       },
     );
-    //STORE REFRESH TOKEN IN COOKIE
+    // STORE REFRESH TOKEN IN COOKIE
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: false, // khi nào deploy thì chuyển thành true
+      secure: false, // Change to true when deploying
       path: '/',
       sameSite: 'strict',
     });
-
     res.json({
       token: token,
+      refreshToken: refreshToken,
       message: 'Login successfully',
     });
   } catch (error) {
@@ -97,43 +97,52 @@ const register = async (req, res) => {
   }
 };
 const getMe = async (req, res) => {
-  const { id } = req.user;
-  const currentUser = await UserModel.findById(id).select('-password');
-  if (!currentUser) {
-    res.status(401);
-    throw new Error('user not found');
-  }
+  try {
+    const { id } = req.user;
+    const currentUser = await UserModel.findById(id)
+      .populate({
+        path: 'friends',
+        select: '-password',
+      })
+      .select('-password');
+    if (!currentUser) {
+      res.status(401);
+      throw new Error('user not found');
+    }
 
-  res.send({
-    userInfo: currentUser,
-    message: 'success',
-  });
+    res.send({
+      userInfo: currentUser,
+      message: 'success',
+    });
+  } catch (error) {
+    res.status(500).json(error);
+  }
 };
 const getMeProfile = async (req, res) => {
   try {
     const {
-      avatar,
+      // avatar,
       fullname,
       age,
       dateOfBirth,
       gender,
       description,
-      password,
+      // password,
     } = req.body;
     const { id } = req.user;
     const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash(password, salt);
+    // const hashPassword = await bcrypt.hash(password, salt);
     // Tìm người dùng trong cơ sở dữ liệu và cập nhật thông tin cá nhân
     const updatedUser = await UserModel.findOneAndUpdate(
       { _id: id },
       {
-        avatar,
+        // avatar,
         fullname,
         age,
         dateOfBirth,
         gender,
         description,
-        password: hashPassword,
+        // password: hashPassword,
       },
       { new: true },
     );
@@ -154,6 +163,7 @@ const requestRefreshToken = async (req, res) => {
   // Khi nào access token hết hạn thì lấy refresh token để tạo một access token mới
   // Lấy refresh token từ cookies
   const refreshToken = req.cookies.refreshToken;
+  console.log(refreshToken);
   if (!refreshToken) {
     return res.status(401).json({
       message: 'You are not authenticated',

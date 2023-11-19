@@ -10,9 +10,10 @@ router.put('/:id/:friendId', authMiddleware, UserCtrl.addRemoveFriend); // add o
 router.post(
   '/upload-avatar',
   authMiddleware,
-  uploadFile.single('file'),
+  uploadFile.single('avatar'),
   UserCtrl.uploadAvatar,
 ); // upload avatar
 router.get('/search/s', authMiddleware, UserCtrl.searchUsers); //search users by username
+router.get('/suggest/u', authMiddleware, UserCtrl.suggestUser);
 
 export default router;

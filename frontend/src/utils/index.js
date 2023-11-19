@@ -142,9 +142,11 @@ export const getUserInfo = async (token) => {
   try {
     const res = await apiRequest({
       url: 'auth/me',
-      token,
+      token: token,
       method: 'GET',
     });
+
+    console.log(res);
 
     if (res.message === 'jwt expired') {
       localStorage.removeItem('user');
