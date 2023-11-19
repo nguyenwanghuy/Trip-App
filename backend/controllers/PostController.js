@@ -16,7 +16,14 @@ const getAllPosts = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const size = parseInt(req.query.size) || 10;
     const skip = (page - 1) * size;
-    const posts = await PostModel.find().sort({ createdAt:-1 }).skip(skip).limit(size);
+    const posts = await PostModel.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(size)
+      .populate({
+        path: 'user',
+        select: 'username avatar',
+      });
     const totalPosts = await PostModel.countDocuments();
     const totalPages = Math.ceil(totalPosts / size);
     res.json({
@@ -50,9 +57,9 @@ const createPost = async (req, res) => {
     image,
     user: id,
     username: username,
-  
-    
-  })
+  });
+  // console.log(newPost._id)
+
   //save the new post
   await newPost.save();
   res.status(201).json({
@@ -119,7 +126,10 @@ const uploadsImage = async (req, res) => {
 const getPost = async (req, res) => {
   try {
     const { id } = req.params;
-    const post = await PostModel.findById(id);
+    const post = await PostModel.findById(id).populate({
+      path: 'user',
+      select: 'username avatar',
+    });
     res.status(200).json({
       data: post,
     });
@@ -261,10 +271,13 @@ const checkViewPrivate = async (req, res) => {
 const getPostById = async (req, res) => {
   try {
     const userId = req.user.id;
-    const postsByUser = await PostModel.find({ user: userId });
+    const postsByUser = await PostModel.find({ user: userId }).populate({
+      path: 'user',
+      select: 'username avatar',
+    });
     res.status(200).json({
       posts: postsByUser,
-      message: 'Success'
+      message: 'Success',
     });
   } catch (error) {
     res.status(404).send({

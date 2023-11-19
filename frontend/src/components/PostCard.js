@@ -13,7 +13,6 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import { io } from 'socket.io-client';
 
-
 const getPostComments = async (id, token) => {
   try {
     const res = await apiRequest({
@@ -194,14 +193,14 @@ const CommentForm = ({ user, id, replyAt, getComments }) => {
   );
 };
 
-const PostCard = ({ post, user, deletePost, likePost, id  }) => {
+const PostCard = ({ post, user, deletePost, likePost, id }) => {
   const [showAll, setShowAll] = useState(0);
   const [showReply, setShowReply] = useState(0);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [replyComments, setReplyComments] = useState(0);
   const [showComments, setShowComments] = useState(0);
-  const [_post,setPost] = useState(post) // tạo state để lưu trữ trong post
+  const [_post, setPost] = useState(post); // tạo state để lưu trữ trong post
   const settings = {
     dots: true,
     infinite: true,
@@ -228,7 +227,7 @@ const PostCard = ({ post, user, deletePost, likePost, id  }) => {
       setPost((prev) => {
         if (prev && prev._id === data.postId) {
           const likes = prev.likes ?? [];
-  
+
           if (likes.includes(data.from)) {
             return {
               ...prev,
@@ -248,20 +247,20 @@ const PostCard = ({ post, user, deletePost, likePost, id  }) => {
       socket.disconnect();
     };
   }, []);
-  const userId = user?.user?._id; 
+  const userId = user?.user?._id;
   const handleLike = async (uri) => {
     await likePost(uri);
     await getComments(post?._id);
     // Gửi sự kiện like
-  if(userId) {
-    const ownerId = _post.user;
-    // console.log(ownerId);
-    if(ownerId){
-      socket.emit('like', { postId: post._id , from: userId, to: ownerId});
+    if (userId) {
+      const ownerId = _post.user;
+      // console.log(ownerId);
+      if (ownerId) {
+        socket.emit('like', { postId: post._id, from: userId, to: ownerId });
+      }
     }
-  }
   };
-  
+
   useEffect(() => {
     getComments();
   }, []);
