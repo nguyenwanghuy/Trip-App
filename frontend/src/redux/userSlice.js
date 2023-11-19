@@ -29,7 +29,6 @@ export function userLogin(user) {
     dispatch(userSlice.actions.login(user));
   };
 }
-
 export function userLogout() {
   return (dispatch, getState) => {
     dispatch(userSlice.actions.logout());

@@ -152,7 +152,6 @@ const updatePost = async (req, res) => {
     res.status(500).send(error);
   }
 };
-
 //delete post by id
 const deletePost = async (req, res) => {
   try {
@@ -171,7 +170,7 @@ const deletePost = async (req, res) => {
     });
   }
 };
-
+//like post
 const likePost = async (req, res) => {
   try {
     const idPost = req.params.idPost;
@@ -205,7 +204,7 @@ const checkViewFriend = async (req, res) => {
   const { id } = req.user;
 
   const currentUser = await UserModel.findById(id).select('friends');
-  // console.log(currentUser)
+  console.log(currentUser)
   if (!currentUser) {
     res.status(400);
     throw new Error('User not found');
@@ -272,6 +271,24 @@ const getPostById = async (req, res) => {
     });
   }
 };
+
+const uploadVideo = async (req,res) => {
+  try {
+  const file = req.file
+const result = await cloudinary.uploader.upload(file.path, {
+  resource_type:'auto',
+  folder: 'SOCIALMEDIA'
+})
+fs.unlinkSync(file.path)
+const videoUrl = result && result.secure_url
+return res.status(200).json({
+  data:videoUrl,
+  message: 'upload video successfully'
+})
+  } catch (error) {
+    res.status(500).json({ error: 'upload failed' });
+  }
+};
 const PostCtrl = {
   getAllPosts,
   createPost,
@@ -283,5 +300,6 @@ const PostCtrl = {
   checkViewFriend,
   checkViewPrivate,
   getPostById,
+  uploadVideo
 };
 export default PostCtrl;

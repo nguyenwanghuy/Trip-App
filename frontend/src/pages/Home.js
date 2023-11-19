@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import axios from 'axios';
+import {jwtDecode} from "jwt-decode";
 import {
   Button,
   FriendsCard,
@@ -24,6 +26,7 @@ import {
   likePost,
 } from '../utils';
 import PostForm from '../components/PostForm';
+import { userLogin } from '../redux/userSlice';
 
 const Home = () => {
   const { user } = useSelector((state) => state.user);
@@ -102,6 +105,39 @@ console.log(uri);
     await fetchPost();
   };
 
+  // refresh token
+  const refreshToken = async () =>{
+    try {
+      const res = axios.post(
+        "http://localhost:8001/trip/auth/refresh",{
+          withCredentials: true
+        });
+        return res.data;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  let axiosJWT = axios.create();
+  axiosJWT.interceptors.request.use(
+    async(config) => {
+      let date = new Date();
+      const decodedToken = jwtDecode(user?.token)
+      if(decodedToken.exp < date.getTime()/1000) {
+        const data = await refreshToken();
+        const refreshUser = {
+          ...user,
+          token: data.token,
+        };
+        dispatch(userLogin(refreshUser))
+        config.headers["token"] = data.token;
+      }
+      return config;
+    },
+    (err) =>{
+      return Promise.reject(err);
+    }
+    )
+
   useEffect(() => {
     setLoading(true);
     fetchPost();
@@ -136,6 +172,7 @@ console.log(uri);
               <Loading />
             ) : posts?.length > 0 ? (
               posts?.map((post) => (
+              <>
                 <PostCard
                   key={post?._id}
                   post={post}
@@ -144,6 +181,9 @@ console.log(uri);
                   likePost={handleLikePost}
                   id={post?._id}
                 />
+                <p>oke</p>
+                </>
+               
               ))
             ) : (
               <div className='flex w-full h-full items-center justify-center'>

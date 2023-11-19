@@ -14,14 +14,8 @@ const PORT = 8001;
 const whitelist = ['http://localhost:3000'];
 
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1 || !origin) {
-      // Cho phép yêu cầu từ whitelist hoặc yêu cầu không có origin (đối với các yêu cầu từ cùng một nguồn)
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: 'http://localhost:3000',
+  credentials: true,
 };
 //http server
 const server = http.createServer(app);

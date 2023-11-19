@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { SetPosts } from '../redux/postSlice';
-
+import axiosJWT from "../pages/Home"
 const API_URL = 'http://localhost:8001/trip';
 
 export const API = axios.create({
@@ -8,7 +8,7 @@ export const API = axios.create({
   responseType: 'json',
 });
 
-export const apiRequest = async ({ url, token, data, method }) => {
+export const apiRequest = async ({ url, token, data, method , axiosJWT }) => {
   try {
     const result = await API({
       url: url,
@@ -71,7 +71,7 @@ export const handleFileUpload = async (uploadFiles) => {
 //   }
 // };
 
-export const fetchPosts = async (token, dispatch, uri, data) => {
+export const fetchPosts = async (token, dispatch, uri, data,axiosJWT) => {
  console.log()
   try {
     const res = await apiRequest({

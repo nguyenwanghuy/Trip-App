@@ -40,7 +40,7 @@ const getComment = async (req, res) => {
     if (!comment) {
       return res.status(404).json({ message: 'Comment not found' });
     }
-    
+   
     res.json({
       data: comment,
     });

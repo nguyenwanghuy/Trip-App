@@ -34,7 +34,7 @@ const login = async (req, res) => {
             password: existingUser.password
         }
         const token = jwt.sign(jwtPayload, process.env.SECRET_KEY, {
-            expiresIn: "1h",
+            expiresIn: "7h",
         })
         const refreshToken = jwt.sign(jwtPayload, process.env.SECRET_KEY_REFRESH_TOKEN, {
             expiresIn: "7d",
@@ -64,21 +64,21 @@ const login = async (req, res) => {
     }
     // console.log(user)
     //check password
-    const isMatchPassword = await bcrypt.compare(password, user.password);
-    if (!isMatchPassword) {
-      return res.status(401).json({
-        message: 'Invalid credentials!',
-      });
-    }
-    //token
-    const jwtPayload = {
-      id: user.id,
-      username: user.username,
-      avatar: user.avatar,
-    };
-    const token = jwt.sign(jwtPayload, process.env.SECRET_KEY, {
-      expiresIn: '7days',
-    });
+    // const isMatchPassword = await bcrypt.compare(password, user.password);
+    // if (!isMatchPassword) {
+    //   return res.status(401).json({
+    //     message: 'Invalid credentials!',
+    //   });
+    // }
+    // //token
+    // const jwtPayload = {
+    //   id: user.id,
+    //   username: user.username,
+    //   avatar: user.avatar,
+    // };
+    // const token = jwt.sign(jwtPayload, process.env.SECRET_KEY, {
+    //   expiresIn: '7days',
+    // });
 
 }
 
