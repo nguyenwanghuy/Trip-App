@@ -18,7 +18,7 @@ const Comment = ({
   handleLike,
 }) => {
   return (
-    <div>
+    <div className='h-full'>
       {showComments === post._id && (
         <div className='w-full mt-4 border-t border-[#66666645] pt-4 '>
           <CommentForm
@@ -31,23 +31,23 @@ const Comment = ({
             <Loading />
           ) : comments && comments.length > 0 ? (
             comments.map((comment) => (
-              <div className='w-full py-2' key={comment?._id}>
+              <div className='w-full py-2' key={comment._id}>
                 <div className='flex gap-3 items-center mb-1'>
                   <Link to={'/profile/' + comment?.userId?._id}>
                     <img
-                      src={comment?.user.avatar}
-                      // alt={comment?.userId.firstName}
+                      src={comment?.user?.avatar}
+                      alt={comment?.user.username}
                       className='w-10 h-10 rounded-full object-cover'
                     />
                   </Link>
                   <div>
                     <Link to={'/profile/' + comment?.userId?._id}>
                       <p className='font-medium text-base text-ascent-1'>
-                        {comment?.user.username}
+                        {comment?.user?.username}
                       </p>
                     </Link>
                     <span className='text-ascent-2 text-sm'>
-                      {moment(comment?.createdAt ?? '2023-05-25').fromNow()}
+                      {moment(comment?.createdAt).fromNow()}
                     </span>
                   </div>
                 </div>
@@ -66,18 +66,19 @@ const Comment = ({
                     </p>
                     <span
                       className='text-blue cursor-pointer'
-                      onClick={() => setReplyComments(comment?._id)}
+                      onClick={() => setReplyComments(comment._id)}
                     >
                       Reply
                     </span>
                   </div>
 
-                  {replyComments === comment?._id && (
+                  {console.log(comment)}
+                  {replyComments === comment._id && (
                     <CommentForm
                       user={user}
-                      id={comment?._id}
-                      replyAt={comment.from}
-                      getComments={() => getComments(post?._id)}
+                      id={comment._id}
+                      replyAt={comment.user._id}
+                      getComments={() => getComments(post._id)}
                     />
                   )}
                 </div>
@@ -90,9 +91,7 @@ const Comment = ({
                       className='text-base text-ascent-1 cursor-pointer'
                       onClick={() =>
                         setShowReply(
-                          showReply === comment?.replies?._id
-                            ? 0
-                            : comment?.replies?._id,
+                          showReply === comment._id ? 0 : comment._id,
                         )
                       }
                     >
@@ -100,18 +99,15 @@ const Comment = ({
                     </p>
                   )}
 
-                  {showReply === comment?.replies?._id &&
+                  {showReply === comment._id &&
                     comment?.replies?.map((reply) => (
                       <ReplyCard
                         reply={reply}
                         user={user}
-                        key={reply?._id}
+                        key={reply._id}
                         handleLike={() =>
                           handleLike(
-                            '/posts/like-comment/' +
-                              comment?._id +
-                              '/' +
-                              reply?._id,
+                            `/posts/like-comment/${comment._id}/${reply._id}`,
                           )
                         }
                       />
@@ -121,7 +117,7 @@ const Comment = ({
             ))
           ) : (
             <span className='flex text-sm py-4 text-ascent-2 text-center'>
-              No Comments, be first to comment
+              No Comments, be the first to comment
             </span>
           )}
         </div>

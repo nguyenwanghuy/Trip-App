@@ -12,6 +12,9 @@ import NoProfile from '../assets/NoProfile.jpg';
 import { apiRequest, fetchPosts, searchUser } from '../utils';
 import { Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import { DownOutlined } from '@ant-design/icons';
+import { Dropdown, Space } from 'antd';
+import { Menu } from 'antd';
 
 const NavBar = () => {
   const { theme } = useSelector((state) => state.theme);
@@ -36,7 +39,7 @@ const NavBar = () => {
   const setSearch = async () => {
     try {
       const res = await apiRequest({
-        url: `/user/search/s?u=${query}`,
+        url: `/user/search/s?term=${query}`,
         token: user.token,
         method: 'GET',
       });
@@ -52,6 +55,26 @@ const NavBar = () => {
     setSearch();
     navigate(`/trip/user/search/s/${query}`);
   };
+
+  const themeToggleClass = theme === 'light' ? 'dark' : 'light';
+
+  const userMenu = (
+    <Menu>
+      <Menu.Item key='1'>
+        <div
+          onClick={() =>
+            dispatch(SetTheme(theme === 'light' ? 'dark' : 'light'))
+          }
+        >
+          {theme === 'light' ? 'Theme (Dark)' : 'Theme (Light)'}
+        </div>
+      </Menu.Item>
+      <Menu.Divider />
+      <Menu.Item key='4' onClick={() => dispatch(userLogout())}>
+        Log Out
+      </Menu.Item>
+    </Menu>
+  );
 
   return (
     <div className='topbar w-full flex items-center justify-between py-3 md:py-3 px-4 bg-primary'>
@@ -82,25 +105,26 @@ const NavBar = () => {
 
       {/* ICONS */}
       <div className='flex gap-4 items-center text-ascent-1 text-md md:text-xl'>
-        <button onClick={() => handleTheme()}>
-          {theme ? <span>Light</span> : <span>Dark</span>}
-        </button>
-        <div className='hidden lg:flex'>
+        {/* <div className='hidden lg:flex'>
           <IoMdNotificationsOutline />
-        </div>
+        </div> */}
 
-        <CustomButton
-          onClick={() => dispatch(userLogout())}
-          title='Log Out'
-          containerStyles='text-sm text-ascent-1 px-4 md:px-6 py-1 md:py-2 border border-[#666] rounded-full'
-        />
-        <div className='flex items-center justify-between gap-4'>
-          <img src={user.userInfo.avatar} className='w-11 h-11 rounded-full' />
-          <span className='text-sm'>{user.userInfo.username}</span>
-        </div>
+        <Dropdown
+          overlay={userMenu}
+          placement='bottomRight'
+          trigger={['click']}
+        >
+          <div className='flex items-center justify-between gap-4 cursor-pointer'>
+            <img
+              src={user.avatar}
+              className='w-11 h-11 rounded-full'
+              alt='User Avatar'
+            />
+            <span className='text-sm'>{user.username}</span>
+          </div>
+        </Dropdown>
       </div>
     </div>
   );
 };
-
 export default NavBar;

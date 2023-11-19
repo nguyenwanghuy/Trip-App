@@ -20,7 +20,8 @@ const PostImage = ({ post }) => {
               <img
                 src={image}
                 alt={`Image ${index + 1}`}
-                className='max-h-[30rem] w-auto mx-auto'
+                // className='max-h-[30rem] w-auto mx-auto'
+                className='h-[30rem] w-full object-cover mx-auto'
               />
             </div>
           ))}

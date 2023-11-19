@@ -1,11 +1,14 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Loading, PostCard } from '../../components/index';
+import { Loading, PostCard, ProfileCard } from '../../components/index';
 import { useParams } from 'react-router-dom';
 import { apiRequest } from '../../utils';
+import InfoProfileCard from '../InfoProfileCard';
 
-const PostProfile = ({ user, UserId }) => {
+const PostProfile = ({ user, UserId, userInfo }) => {
   const [loading, setLoading] = useState(true);
   const [posts, setPosts] = useState({});
+
+  console.log(userInfo);
 
   const handleDelete = () => {};
 
@@ -31,8 +34,11 @@ const PostProfile = ({ user, UserId }) => {
   }, [UserId, user.token]);
 
   return (
-    <div className='w-full flex  pt-5 pb-10 h-full'>
-      <div className='w-full flex-1 h-full bg-orimary flex flex-col '>
+    <div className='w-full flex pt-5 pb-10 h-full gap-6'>
+      <div className='w-[25%]'>
+        <InfoProfileCard user={userInfo} />
+      </div>
+      <div className='w-2/3 flex-1 h-full bg-orimary flex flex-col '>
         {loading ? (
           <Loading />
         ) : posts && posts.length > 0 ? (

@@ -5,6 +5,7 @@ import { MdOutlineDeleteOutline } from 'react-icons/md';
 const PostAction = ({
   user,
   post,
+  _post,
   showComments,
   setShowComments,
   getComments,
@@ -20,12 +21,12 @@ const PostAction = ({
         className='flex gap-2 items-center text-base cursor-pointer'
         onClick={() => handleLike('/post/like/' + post._id)}
       >
-        {post.likes.includes(user.userInfo._id) ? (
+        {post.likes.includes(user._id) ? (
           <BiSolidLike size={20} color='blue' />
         ) : (
           <BiLike size={20} />
         )}
-        {post?.likes?.length} Likes ;
+        {post?.likes?.length} Likes
       </p>
 
       <p
@@ -36,10 +37,10 @@ const PostAction = ({
         }}
       >
         <BiComment size={20} />
-        {post?.comments?.length} Comments
+        {post?.comment?.length} Comments
       </p>
 
-      {user.userInfo._id === post.user && (
+      {/* {user.userInfo._id === post.user._id && (
         <div
           className='flex gap-1 items-center text-base text-ascent-1 cursor-pointer'
           onClick={() => deletePost(post._id)}
@@ -47,7 +48,7 @@ const PostAction = ({
           <MdOutlineDeleteOutline size={20} />
           <span>Delete</span>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

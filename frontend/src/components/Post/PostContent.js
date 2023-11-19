@@ -7,7 +7,7 @@ const PostContent = ({ post, showAll, setShowAll }) => {
       <div className='text-ascent-2'>
         <PostImage post={post} />
 
-        <div className='font-bold'>
+        <div className='font-bold text-left'>
           {showAll === post?._id
             ? post?.description
             : post?.description?.slice(0, 300)}
@@ -30,7 +30,7 @@ const PostContent = ({ post, showAll, setShowAll }) => {
             ))}
         </div>
 
-        <div>
+        <div className='text-left'>
           {showAll === post?._id ? post?.content : post?.content?.slice(0, 300)}
 
           {post?.content?.length > 301 &&

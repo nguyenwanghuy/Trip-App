@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { apiRequest } from '../../utils';
 import { Comment, PostAction, PostContent, PostHeader } from '../index';
+import { io } from 'socket.io-client';
 import CardModal from './PostCardModal';
 
 const getPostComments = async (id, token) => {
@@ -23,6 +24,7 @@ const PostCard = ({ post, user, deletePost, likePost, id }) => {
   const [loading, setLoading] = useState(false);
   const [replyComments, setReplyComments] = useState(0);
   const [showComments, setShowComments] = useState(0);
+  const [_post, setPost] = useState(post);
 
   const getComments = async () => {
     setReplyComments(0);
@@ -36,27 +38,66 @@ const PostCard = ({ post, user, deletePost, likePost, id }) => {
       setLoading(false);
     }
   };
+
+  // const socket = io('http://localhost:8001');
+  // useEffect(() => {
+  //   socket.on('like', (data) => {
+  //     setPost((prev) => {
+  //       if (prev && prev._id === data.postId) {
+  //         const likes = prev.likes ?? [];
+
+  //         if (likes.includes(data.from)) {
+  //           return {
+  //             ...prev,
+  //             likes: likes.filter((id) => id !== data.from),
+  //           };
+  //         } else {
+  //           return {
+  //             ...prev,
+  //             likes: [...likes, data.from],
+  //           };
+  //         }
+  //       }
+  //       return prev;
+  //     });
+  //   });
+  //   return () => {
+  //     socket.disconnect();
+  //   };
+  // }, []);
+
+  // const userId = user?.userInfo?._id;
+
+  // const handleLike = async (uri) => {
+  //   await likePost(uri);
+  //   await getComments(post?._id);
+  //   if (userId) {
+  //     const ownerId = _post.user;
+  //     if (ownerId) {
+  //       socket.emit('like', { postId: post._id, from: userId, to: ownerId });
+  //     }
+  //   }
+  // };
+
   const handleLike = async (uri) => {
     await likePost(uri);
     await getComments(post?._id);
   };
+
   useEffect(() => {
     getComments();
   }, []);
 
   return (
     <div className='mb-2 bg-primary p-4 rounded-xl'>
-      <PostHeader post={post} />
-
-      {/* <div>
-        <div className='text-ascent-2'> {post?.userId?.location}</div>
-      </div> */}
+      <PostHeader post={post} deletePost={deletePost} user={user} />
 
       <PostContent post={post} showAll={showAll} setShowAll={setShowAll} />
 
       <PostAction
         user={user}
         post={post}
+        _post={_post}
         showComments={showComments}
         setShowComments={setShowComments}
         getComments={getComments}

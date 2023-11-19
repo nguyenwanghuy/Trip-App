@@ -14,7 +14,8 @@ import ReplyCard from './Comment/ReplyCard';
 import Comment from './Comment/Comment';
 import CommentForm from './Form/CommentForm';
 import PostForm from './Form/PostForm';
-
+import Weather from './Weather';
+import Ads from './Ads';
 export {
   Loading,
   TextInput,
@@ -32,4 +33,6 @@ export {
   ReplyCard,
   CommentForm,
   PostForm,
+  Weather,
+  Ads,
 };

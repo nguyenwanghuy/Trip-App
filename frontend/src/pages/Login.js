@@ -20,6 +20,7 @@ const Login = () => {
   const {
     register,
     handleSubmit,
+    trigger,
     formState: { errors },
   } = useForm({
     mode: 'onChange',
@@ -27,17 +28,19 @@ const Login = () => {
 
   const loginUser = (data) => {
     return async (dispatch) => {
+      setIsSubmitting(true);
+
       try {
-        const loginResponse = await apiRequest({
+        const res = await apiRequest({
           url: '/auth/login',
           data: data,
           method: 'POST',
         });
 
-        if (loginResponse?.status === 'failed') {
-          setErrMsg(loginResponse.message);
+        if (res?.status === 'failed') {
+          setErrMsg(res.message);
         } else {
-          const token = loginResponse.token;
+          const token = res.token;
           const profileResponse = await apiRequest({
             url: '/auth/me',
             token: token,
@@ -61,9 +64,13 @@ const Login = () => {
     };
   };
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data, e) => {
     try {
-      dispatch(loginUser(data));
+      e.preventDefault();
+      const isValid = await trigger();
+      if (isValid) {
+        dispatch(loginUser(data));
+      }
     } catch (error) {
       console.log(error);
       setIsSubmitting(false);

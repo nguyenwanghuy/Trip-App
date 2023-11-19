@@ -45,6 +45,7 @@ const createPost = async (req, res) => {
   const { id, username } = req.user;
   // console.log(id)
   const currentUser = await UserModel.findById(id);
+
   // console.log(currentUser)
   if (!currentUser) {
     res.status = 400;
@@ -198,7 +199,6 @@ const likePost = async (req, res) => {
       post.likes.push(userId);
     }
     const updatePost = await post.save();
-
     res.status(201).json({
       data: updatePost,
       message: 'Like or unlike successfully',

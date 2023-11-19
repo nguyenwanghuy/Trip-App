@@ -1,6 +1,7 @@
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
 import UserModel from '../models/user.model.js';
+import PostModel from '../models/postModel.js';
 
 cloudinary.config({
   cloud_name: 'dxsyy0ocl',
@@ -13,11 +14,10 @@ const uploadAvatar = async (req, res) => {
 
     //add file
     const file = req.file;
-    console.log(file);
     //upload file to cloudinary server
     const result = await cloudinary.uploader.upload(file.path, {
       resource_type: 'auto',
-      folder: 'avatar',
+      folder: 'Trip',
     });
     //remove temporary folder
     fs.unlinkSync(file.path);
@@ -87,19 +87,24 @@ const addRemoveFriend = async (req, res) => {
 
 const searchUsers = async (req, res) => {
   try {
-    const { u } = req.query;
-    const searchUsers = await UserModel.find({ username: u }).select(
+    const { username } = req.params;
+    const searchUsers = await UserModel.find({ username: username }).select(
       'username avatar',
     );
     if (!searchUsers)
       return res.status(404).json({ message: 'User not found' });
     res.status(200).json({
-      data: searchUsers,
+      searchUsers: searchUsers,
     });
   } catch (error) {
     res.status(500).send({ message: error.message });
   }
 };
+// Hàm lấy ngẫu nhiên các phần tử từ một mảng
+function getRandomElements(array, count) {
+  const shuffled = array.sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+}
 const UserCtrl = {
   uploadAvatar,
   getUser,

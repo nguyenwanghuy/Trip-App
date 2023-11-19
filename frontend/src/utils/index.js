@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { SetPosts } from '../redux/postSlice';
+import { axiosJWT, refreshToken } from './api.js';
 
 const API_URL = 'http://localhost:8001/trip';
 
@@ -13,7 +14,9 @@ export const apiRequest = async ({ url, token, data, method }) => {
     const result = await API({
       url: url,
       method: method || 'GET',
+      withCredentials: true,
       data: data,
+
       headers: {
         'x-access-token': token,
         'Content-Type': 'application/json',
@@ -24,34 +27,17 @@ export const apiRequest = async ({ url, token, data, method }) => {
   } catch (error) {
     const err = error.response.data;
     console.log(err);
-    return { status: err.success, message: err.message };
-  }
-};
 
-export const refreshToken = () => async (dispatch, getState) => {
-  try {
-    const refreshToken = getState().user.refreshToken;
-    if (refreshToken) {
-      // Make an API request to refresh the access token using the refresh token
-      const response = await apiRequest({
-        url: '/auth/login', // Replace with your server's endpoint
-        token: refreshToken,
-        method: 'POST',
-      });
+    console.log(err.error.message);
+    if (err.error.message === 'jwt expired') {
+      const refreshedToken = await refreshToken();
 
-      // Update the user and access token in the store
-      if (response && response.accessToken) {
-        dispatch(
-          userSlice.actions.login({
-            user: response.user,
-            refreshToken,
-            accessToken: response.accessToken,
-          }),
-        );
+      if (refreshedToken) {
+        return apiRequest({ url, token: refreshedToken, data, method });
       }
     }
-  } catch (error) {
-    console.error('Token refresh failed', error);
+
+    return { status: err.success, message: err.message };
   }
 };
 
@@ -81,12 +67,41 @@ export const handleFileUpload = async (uploadFiles) => {
   return uploadedFileURLs;
 };
 
+export const handleAvatarUpload = async ({ file, token }) => {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await axios.post(
+      'http://localhost:8001/trip/user/upload-avatar',
+      formData,
+      {
+        headers: {
+          'x-access-token': token,
+          'Content-Type': 'multipart/form-data',
+        },
+      },
+    );
+
+    console.log('Avatar Upload Response:', response.data);
+
+    if (response.data.message === 'Uploading avatar successfully') {
+      return response.data.avatar;
+    } else {
+      console.error('Avatar upload failed');
+      return null;
+    }
+  } catch (error) {
+    console.error('Avatar upload error:', error);
+    return null;
+  }
+};
+
 export const fetchPosts = async (token, dispatch, uri, data) => {
-  console.log();
   try {
     const res = await apiRequest({
       url: uri || '/post',
-      token: token,
+      token,
       method: 'GET',
       data: data || {},
     });
@@ -101,7 +116,7 @@ export const likePost = async ({ uri, token }) => {
   try {
     const res = await apiRequest({
       url: uri,
-      token: token,
+      token,
       method: 'POST',
     });
     return res;
@@ -114,7 +129,7 @@ export const deletePost = async (id, token) => {
   try {
     const res = await apiRequest({
       url: '/post/' + id,
-      token: token,
+      token,
       method: 'DELETE',
     });
     return;
@@ -123,21 +138,19 @@ export const deletePost = async (id, token) => {
   }
 };
 
-export const getUserInfo = async (id, token) => {
+export const getUserInfo = async (token) => {
   try {
-    const uri = id === undefined ? '/user/' + id : '/user/' + id;
-
     const res = await apiRequest({
-      url: uri,
-      token: token,
+      url: 'auth/me',
+      token,
       method: 'GET',
     });
 
-    if (res.message === 'Authentication failed') {
+    if (res.message === 'jwt expired') {
       localStorage.removeItem('user');
       window.location.replace('/login');
     }
-    return res.user;
+    return res.userInfo;
   } catch (error) {
     console.log(error);
   }
@@ -147,12 +160,39 @@ export const searchUser = async (token, query) => {
   try {
     const res = await apiRequest({
       url: `/user/search/s?u=${query}`,
-      token: token,
+      token,
       method: 'GET',
     });
     return res;
   } catch (error) {
     logError(error);
     throw error;
+  }
+};
+
+// export const sendFollowRequest = async (token, id, friendId) => {
+//   try {
+//     const res = await apiRequest({
+//       url: `/user/${id}/${friendId}`,
+//       token: token,
+//       method: 'PUT',
+//     });
+//     return res;
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
+
+export const sendFriendRequest = async (token, id) => {
+  try {
+    const res = await apiRequest({
+      url: `/test/friend-request`,
+      token: token,
+      method: 'POST',
+      data: { requestTo: id },
+    });
+    return;
+  } catch (error) {
+    console.log(error);
   }
 };
