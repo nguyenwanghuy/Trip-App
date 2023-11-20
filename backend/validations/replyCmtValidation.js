@@ -1,4 +1,4 @@
 import * as Yup from 'yup';
 export const replyCmtSchema = Yup.object().shape({
-    description: Yup.string().min(6),
-})
+  description: Yup.string(),
+});

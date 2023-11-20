@@ -3,7 +3,7 @@ import PostModel from '../models/postModel.js';
 
 const createComment = async (req, res) => {
   try {
-    const { description } = req.body;
+    const { description, from } = req.body;
     const post = req.params.id;
     const id = req.user.id;
 
@@ -15,15 +15,18 @@ const createComment = async (req, res) => {
       description: description,
       post: post,
       user: id,
+      from,
     });
-
-    console.log('new', newComment);
 
     await newComment.save();
 
-    const updatedPost = await PostModel.findByIdAndUpdate(post, {
-      $push: { comment: newComment._id },
-    }, { new: true });
+    const updatedPost = await PostModel.findByIdAndUpdate(
+      post,
+      {
+        $push: { comment: newComment._id },
+      },
+      { new: true },
+    );
 
     res.json({
       message: 'Comment created',
@@ -35,12 +38,20 @@ const createComment = async (req, res) => {
 };
 
 const getComment = async (req, res) => {
-    try {
-    const comment = await CommentModel.find({ post: req.params.id }); 
+  try {
+    const comment = await CommentModel.find({ post: req.params.id })
+      .populate({
+        path: 'user',
+        select: 'username avatar',
+      })
+      .populate({
+        path: 'replies.user',
+        select: 'username avatar',
+      })
+      .sort({ _id: -1 });
     if (!comment) {
       return res.status(404).json({ message: 'Comment not found' });
     }
-   
     res.json({
       data: comment,
     });
@@ -48,7 +59,6 @@ const getComment = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
-
 
 const updateComment = async (req, res) => {
   try {
@@ -89,6 +99,36 @@ const deleteComment = async (req, res) => {
     });
   }
 };
+
+export const replyPostComment = async (req, res, next) => {
+  const { userId } = req.body.user;
+  const { comment, replyAt, from } = req.body;
+  const { id } = req.params;
+
+  if (comment === null) {
+    return res.status(404).json({ message: 'Comment is required.' });
+  }
+
+  try {
+    const commentInfo = await Comments.findById(id);
+
+    commentInfo.replies.push({
+      comment,
+      replyAt,
+      from,
+      userId,
+      created_At: Date.now(),
+    });
+
+    commentInfo.save();
+
+    res.status(200).json(commentInfo);
+  } catch (error) {
+    console.log(error);
+    res.status(404).json({ message: error.message });
+  }
+};
+
 const CommentCtrl = {
   createComment,
   updateComment,

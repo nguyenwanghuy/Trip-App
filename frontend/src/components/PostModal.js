@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { Button, Modal } from 'antd';
+import { Button, Modal, Select } from 'antd';
 import { useForm } from 'react-hook-form';
 import TextInput from './TextInput';
 import { BsFiletypeGif, BsPersonFillAdd } from 'react-icons/bs';
 import { BiImages, BiSolidVideo } from 'react-icons/bi';
+import FriendListDropdown from './FriendListDropdown';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import { Option } from 'antd/es/mentions';
 
 const PostModal = ({
   handlePostSubmit,
@@ -11,15 +15,22 @@ const PostModal = ({
   errMsg,
   setFile,
   file,
+  user,
 }) => {
   const [open, setOpen] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
-  const [modalText, setModalText] = useState('Content of the modal');
+  const [showFriendList, setShowFriendList] = useState(false);
+  const [selectedFriends, setSelectedFriends] = useState([]);
+  const [content, setContent] = useState('');
+  const [visibility, setVisibility] = useState('isPublic');
+
+  // const { Option } = Select;
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm();
 
@@ -27,25 +38,27 @@ const PostModal = ({
     setOpen(true);
   };
 
-  const handleOk = () => {
-    if (file.length === 0) {
+  const handleOk = async () => {
+    if (file.length === 0 || !visibility) {
       setOpen(false);
-    } else {
-      setConfirmLoading(true);
-
-      handleSubmit((data) => {
-        handlePostSubmit(data)
-          .then(() => {
-            reset();
-            setFile([]);
-            setConfirmLoading(false);
-            setOpen(false);
-          })
-          .catch((error) => {
-            console.error('Lỗi khi đăng bài:', error);
-            setConfirmLoading(false);
-          });
+      return;
+    }
+    setConfirmLoading(true);
+    try {
+      const data = await handleSubmit((formData) => {
+        const cleanedContent = formData.content.replace(/<\/?p>/g, '');
+        formData.content = cleanedContent;
+        handlePostSubmit(formData, selectedFriends, visibility);
       })();
+      reset();
+      setFile([]);
+      setContent('');
+      setVisibility(null);
+      setOpen(false);
+    } catch (error) {
+      console.error('Error submitting post:', error);
+    } finally {
+      setConfirmLoading(false);
     }
   };
 
@@ -53,41 +66,79 @@ const PostModal = ({
     setOpen(false);
   };
 
+  const handleVisibilityChange = (value) => {
+    setVisibility(value);
+    if (value === 'isFriends') {
+      setOpen(true);
+    }
+  };
+
   return (
     <div>
-      <Button onClick={showModal}>Open Modal with async logic</Button>
+      <Button
+        onClick={showModal}
+        className='border-none bg-[#F2F3F5] w-full h-[3rem] text-left'
+      >
+        Share your experience!
+      </Button>
       <Modal
-        title='Title'
+        title='Share your experience'
         open={open}
         onOk={handleOk}
-        okButtonProps={{ className: 'custom-ok-button' }}
+        okButtonProps={{
+          className: 'custom-ok-button',
+          disabled: file.length === 0,
+        }}
         confirmLoading={confirmLoading}
         onCancel={handleCancel}
+        width='50%'
+        centered={true}
       >
         <>
           <form
             onSubmit={handleSubmit(handlePostSubmit)}
-            className='bg-primary px-4 rounded-lg'
+            className='bg-primary px-4 rounded-lg '
           >
             <div className='w-full items-center gap-2 py-4 border-b border-[#66666645]'>
+              <Select
+                style={{ width: '100%' }}
+                placeholder='Select post visibility'
+                onChange={(value) => setVisibility(value)}
+                value={visibility}
+              >
+                <Option value='isPublic'>Public</Option>
+                <Option value='isPrivate'>Private</Option>
+                <Option value='isFriends'>Friends</Option>
+              </Select>
+              {visibility === 'isFriends' && (
+                <FriendListDropdown
+                  friends={user.friends}
+                  onSelectFriend={(selectedFriends) => {
+                    setSelectedFriends(selectedFriends);
+                  }}
+                  selectedFriends={selectedFriends}
+                />
+              )}
               <TextInput
-                styles='w-full rounded-full py-5'
-                placeholder="What's on your mind...."
+                styles='w-full rounded-full py-5 border-none '
+                placeholder='Description...'
                 name='description'
                 register={register('description', {
                   required: 'Write something about post',
                 })}
                 error={errors.description ? errors.description.message : ''}
               />
-              <TextInput
-                styles='w-full rounded-full py-5'
-                placeholder="What's on your mind...."
+              <div className='w-full border-t border-[#66666645]'></div>
+              <ReactQuill
+                theme='snow'
+                value={content}
+                onChange={(value) => {
+                  setValue('content', value);
+                  setContent(value);
+                }}
                 name='content'
-                register={register('content', {
-                  required: 'Write something about post',
-                })}
-                error={errors.content ? errors.content.message : ''}
               />
+              <div className='w-full border-t border-[#66666645]'></div>
 
               <ul className='flex my-4'>
                 {file.map((selectedFile, index) => (
@@ -126,7 +177,7 @@ const PostModal = ({
                   className='hidden'
                   id='imgUpload'
                   data-max-size='5120'
-                  accept='.jpg, .png, .jpeg, .gif'
+                  accept='*'
                   multiple
                 />
 

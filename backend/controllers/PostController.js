@@ -16,7 +16,14 @@ const getAllPosts = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const size = parseInt(req.query.size) || 10;
     const skip = (page - 1) * size;
-    const posts = await PostModel.find().sort({ createdAt:-1 }).skip(skip).limit(size);
+    const posts = await PostModel.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(size)
+      .populate({
+        path: 'user',
+        select: 'username avatar',
+      });
     const totalPosts = await PostModel.countDocuments();
     const totalPages = Math.ceil(totalPosts / size);
     res.json({
@@ -35,8 +42,8 @@ const getAllPosts = async (req, res) => {
 // create a new post
 const createPost = async (req, res) => {
   const { content, description, image } = req.body;
-  const { id, username } = req.user;
-  // console.log(id)
+  const { id } = req.user;
+  console.log(id);
   const currentUser = await UserModel.findById(id);
 
   // console.log(currentUser)
@@ -49,10 +56,8 @@ const createPost = async (req, res) => {
     description,
     image,
     user: id,
-    username: username,
-  
-    
-  })
+  });
+
   //save the new post
   await newPost.save();
   res.status(201).json({
@@ -119,7 +124,10 @@ const uploadsImage = async (req, res) => {
 const getPost = async (req, res) => {
   try {
     const { id } = req.params;
-    const post = await PostModel.findById(id);
+    const post = await PostModel.findById(id).populate({
+      path: 'user',
+      select: 'username avatar',
+    });
     res.status(200).json({
       data: post,
     });
@@ -204,14 +212,13 @@ const checkViewFriend = async (req, res) => {
   const { id } = req.user;
 
   const currentUser = await UserModel.findById(id).select('friends');
-  console.log(currentUser)
   if (!currentUser) {
     res.status(400);
     throw new Error('User not found');
   }
 
   const shareUser = currentUser.friends.filter((friend) =>
-    viewers.includes(friend),
+    viewers.includes(String(friend)),
   );
 
   const newPost = new PostModel({
@@ -228,23 +235,51 @@ const checkViewFriend = async (req, res) => {
   });
 };
 
+const PostVisibility = {
+  PRIVATE: 'private',
+  PUBLIC: 'public',
+  FRIENDS: 'friends',
+};
+
 const checkViewPrivate = async (req, res) => {
   try {
-    const { content, description, image } = req.body;
+    const { content, description, image, viewers, visibility } = req.body;
     const { id } = req.user;
 
-    // Kiểm tra xem người dùng hiện tại có tồn tại không
-    const currentUser = await UserModel.findById(id);
+    const currentUser = await UserModel.findById(id).select('friends');
     if (!currentUser) {
       return res.status(400).json({ message: 'User not found' });
+    }
+
+    let postViewers = [];
+
+    switch (visibility) {
+      case PostVisibility.PRIVATE:
+        postViewers = [id];
+        break;
+      case PostVisibility.PUBLIC:
+        const allUsers = await UserModel.find().select('_id');
+        postViewers = allUsers.map((user) => user._id);
+        break;
+      case PostVisibility.FRIENDS:
+        postViewers = [
+          id,
+          ...currentUser.friends.filter((friend) =>
+            viewers.includes(String(friend)),
+          ),
+        ];
+        break;
+      default:
+        throw new Error('Invalid visibility option');
     }
 
     const newPost = new PostModel({
       content,
       description,
       image,
-      viewers: [id],
-      isPrivate: true, // Chỉ mình người dùng hiện tại có thể xem bài viết
+      user: id,
+      viewers: postViewers,
+      visibility,
     });
 
     await newPost.save();
@@ -257,13 +292,17 @@ const checkViewPrivate = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 };
+
 const getPostById = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const postsByUser = await PostModel.find({ user: userId });
+    const { id } = req.params;
+    const postsByUser = await PostModel.find({ user: id }).populate({
+      path: 'user',
+      select: 'username avatar',
+    });
     res.status(200).json({
       posts: postsByUser,
-      message: 'Success'
+      message: 'Success',
     });
   } catch (error) {
     res.status(404).send({
