@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { TextInput, Loading, CustomButton } from '../index';
 import { apiRequest } from '../../utils';
 import { RiSendPlane2Fill } from 'react-icons/ri';
 
-const CommentForm = ({ user, id, replyAt, getComments }) => {
+const CommentForm = ({
+  user,
+  id,
+  replyAt,
+  getComments,
+  editComment,
+  setEditComment,
+}) => {
   const [loading, setLoading] = useState(false);
   const [errMsg, setErrMsg] = useState('');
 
@@ -12,40 +19,62 @@ const CommentForm = ({ user, id, replyAt, getComments }) => {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm({
     mode: 'onChange',
   });
 
+  useEffect(() => {
+    if (editComment) {
+      setValue('description', editComment.description);
+    }
+  }, [editComment, setValue]);
+
   const onSubmit = async (data) => {
     setLoading(true);
     setErrMsg('');
+
     try {
-      const URL = !replyAt ? '/comment/' + id : '/replyCmt/' + id;
+      let URL, method;
+
+      if (editComment) {
+        URL = `/comment/${editComment._id}`;
+        method = 'PUT';
+      } else {
+        URL = !replyAt ? '/comment/' + id : '/replyCmt/' + id;
+        method = 'POST';
+      }
 
       const newData = {
         description: data?.description,
         from: user.username,
         replyAt: replyAt,
       };
+
       const res = await apiRequest({
         url: URL,
         data: newData,
         token: user?.token,
-        method: 'POST',
+        method: method,
       });
 
       if (res?.status === 'failed') {
         setErrMsg(res);
       } else {
-        reset({ description: '' });
+        if (editComment) {
+          setEditComment(null);
+        } else {
+          reset({ description: '' });
+        }
         setErrMsg('');
         await getComments();
       }
-      setLoading(false);
     } catch (error) {
-      console.log(error);
+      console.error(error);
+    } finally {
       setLoading(false);
+      setEditComment(null); // Ensure edit mode is cleared even on error
     }
   };
 
@@ -64,7 +93,7 @@ const CommentForm = ({ user, id, replyAt, getComments }) => {
         <div className='relative flex-grow'>
           <TextInput
             name='description'
-            styles='w-full rounded-full py-3 mb-1 pr-12' // Adjusted styling for the input
+            styles='w-full rounded-full py-3 mb-1 pr-12'
             placeholder={replyAt ? `Reply @${replyAt}` : 'Comment this post'}
             register={register('description', {
               required: 'Comment can not be empty',

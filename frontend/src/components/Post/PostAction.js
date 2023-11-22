@@ -1,6 +1,6 @@
+// PostAction.js
 import React from 'react';
 import { BiComment, BiLike, BiSolidLike } from 'react-icons/bi';
-import { MdOutlineDeleteOutline } from 'react-icons/md';
 
 const PostAction = ({
   user,
@@ -9,24 +9,20 @@ const PostAction = ({
   showComments,
   setShowComments,
   getComments,
-  deletePost,
   handleLike,
 }) => {
   return (
-    <div
-      className='mt-4 flex justify-between items-center px-3 py-2 text-ascent-2
-      text-base border-t border-[#66666645]'
-    >
+    <div className='mt-4 flex justify-between items-center px-3 py-2 text-ascent-2 text-base border-t border-[#66666645]'>
       <p
         className='flex gap-2 items-center text-base cursor-pointer'
-        onClick={() => handleLike('/post/like/' + _post._id)}
+        onClick={() => handleLike('/post/like/' + post._id)}
       >
-        {_post.likes.includes(user._id) ? (
+        {post.likes.includes(user._id) ? (
           <BiSolidLike size={20} color='blue' />
         ) : (
           <BiLike size={20} />
         )}
-        {_post?.likes?.length} Likes
+        {post?.likes?.length} Likes
       </p>
 
       <p
@@ -39,16 +35,6 @@ const PostAction = ({
         <BiComment size={20} />
         {post?.comment?.length} Comments
       </p>
-
-      {/* {user.userInfo._id === post.user._id && (
-        <div
-          className='flex gap-1 items-center text-base text-ascent-1 cursor-pointer'
-          onClick={() => deletePost(post._id)}
-        >
-          <MdOutlineDeleteOutline size={20} />
-          <span>Delete</span>
-        </div>
-      )} */}
     </div>
   );
 };

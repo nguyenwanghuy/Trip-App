@@ -8,6 +8,8 @@ const PostForm = ({
   errMsg,
   setFile,
   file,
+  fileList,
+  handleRemove,
 }) => {
   return (
     <div>
@@ -29,6 +31,8 @@ const PostForm = ({
               errMsg={errMsg}
               setFile={setFile}
               file={file}
+              fileList={fileList}
+              handleRemove={handleRemove}
             />
           </div>
         </div>

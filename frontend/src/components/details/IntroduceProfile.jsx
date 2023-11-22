@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   BsBriefcase,
   BsFacebook,
@@ -26,7 +26,6 @@ const IntroduceProfile = ({ userInfo, fetchUserData }) => {
   const [picture, setPicture] = useState(null);
 
   const dispatch = useDispatch();
-
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     setErrMsg('');
@@ -56,7 +55,8 @@ const IntroduceProfile = ({ userInfo, fetchUserData }) => {
 
         const newUser = {
           token: user.token,
-          userInfo: { ...user.userInfo, ...res.updateMeProfile },
+          ...user.userInfo,
+          ...res.updateMeProfile,
         };
         dispatch(userLogin(newUser));
         setIsModalVisible(false);
@@ -86,6 +86,9 @@ const IntroduceProfile = ({ userInfo, fetchUserData }) => {
     <div className='bg-primary px-4 py-4 rounded-md shadow-lg'>
       <div className='w-full flex flex-col gap-2 py-4  '>
         <div className=''>
+          {console.log(user)}
+          {console.log(userInfo?._id)}
+
           {user._id === userInfo?._id && (
             <Button
               className='flex gap-2 border-none'
@@ -149,13 +152,6 @@ const IntroduceProfile = ({ userInfo, fetchUserData }) => {
         onSubmit={onSubmit}
         isSubmitting={isSubmitting}
         errMsg={errMsg}
-        defaultValues={{
-          fullname: user.fullname,
-          age: user.age,
-          dateOfBirth: user.dateOfBirth,
-          gender: user.gender,
-          description: user.description,
-        }}
       />
     </div>
   );

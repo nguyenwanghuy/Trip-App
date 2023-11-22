@@ -17,12 +17,7 @@ router.post(
   AuthCtrl.register,
 ); // đăng ký tài khoản
 router.get('/me', authMiddleware, AuthCtrl.getMe); // vào trang cá nhân
-router.put(
-  '/me/profile/:id',
-  authMiddleware,
-  verifyTokenUser,
-  AuthCtrl.getMeProfile,
-); // sửa trang cá nhân
+router.put('/me/profile/:id', authMiddleware, AuthCtrl.getMeProfile); // sửa trang cá nhân
 router.post('/refresh', AuthCtrl.requestRefreshToken); // refresh token
 router.post('/logout', authMiddleware, AuthCtrl.logout); // logout
 export default router;
