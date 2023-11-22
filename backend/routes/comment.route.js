@@ -17,7 +17,7 @@ router.post(
   validationMiddleware(commentSchema),
   CommentCtrl.createComment,
 ); // đăng theo id bài post
-router.put('/:id', verifyTokenUser, CommentCtrl.updateComment); // update comment theo id post
+router.put('/:id', CommentCtrl.updateComment); // update comment theo id post
 router.delete('/:id', verifyTokenUser, CommentCtrl.deleteComment); // delete comment theo id post
 
 export default router;

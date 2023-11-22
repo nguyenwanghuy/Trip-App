@@ -142,7 +142,7 @@ const Profile = () => {
           <IntroduceProfile userInfo={userInfo} fetchUserData={fetchUserData} />
         );
       case 'friends':
-        return <FriendsProfile />;
+        return <FriendsProfile userInfo={userInfo} />;
       case 'images':
         return <ImagesProfile />;
       default:

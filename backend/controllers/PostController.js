@@ -245,7 +245,15 @@ const PostVisibility = {
 
 const checkViewPrivate = async (req, res) => {
   try {
-    const { content, description, image, viewers, visibility } = req.body;
+    const {
+      content,
+      description,
+      image,
+      viewers,
+      visibility,
+      dateStart,
+      dateEnd,
+    } = req.body;
     const { id } = req.user;
 
     const currentUser = await UserModel.findById(id).select('friends');
@@ -279,6 +287,8 @@ const checkViewPrivate = async (req, res) => {
       content,
       description,
       image,
+      dateStart,
+      dateEnd,
       user: id,
       viewers: postViewers,
       visibility,
@@ -312,6 +322,7 @@ const getPostById = async (req, res) => {
     });
   }
 };
+
 const PostCtrl = {
   getAllPosts,
   createPost,
