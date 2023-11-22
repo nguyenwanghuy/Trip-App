@@ -64,21 +64,25 @@ const updateComment = async (req, res) => {
   try {
     const { description } = req.body;
     const commentId = req.params.id;
+
     const updateComment = await CommentModel.findOneAndUpdate(
       { _id: commentId },
-      {
-        description: description,
-      },
-      {
-        new: true,
-      },
+      { description: description },
+      { new: true },
     );
+
+    if (!updateComment) {
+      // If the comment with the given ID is not found
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
     return res.json({
-      message: 'Update successfully',
+      message: 'Update successful',
       data: updateComment,
     });
   } catch (error) {
-    res.status(500).send(error);
+    console.error(error);
+    res.status(500).send('Internal Server Error');
   }
 };
 const deleteComment = async (req, res) => {

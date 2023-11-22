@@ -47,13 +47,16 @@ const EditProfileForm = ({
           styles='w-full'
           register={register('age')}
         />
+        <label className='block text-base text-ascent-2 mb-1'>
+          Date of Birth
+        </label>
         <TextInput
-          name='dateOfBirth'
-          label='Date of Birth'
-          placeholder='Date of Birth'
+          name='Dob'
+          label='Date of birth'
+          placeholder='Date of birth'
           type='date'
           styles='w-full'
-          register={register('dateOfBirth')}
+          register={register('DateOfBirth')}
         />
         <TextInput
           name='gender'

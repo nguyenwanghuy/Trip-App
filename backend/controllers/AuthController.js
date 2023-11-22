@@ -147,6 +147,8 @@ const getMeProfile = async (req, res) => {
       dateOfBirth,
       gender,
       description,
+      location,
+      profession,
       // password,
     } = req.body;
     const { id } = req.user;
@@ -162,6 +164,8 @@ const getMeProfile = async (req, res) => {
         dateOfBirth,
         gender,
         description,
+        location,
+        profession,
         // password: hashPassword,
       },
       { new: true },

@@ -2,11 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import { BsThreeDots } from 'react-icons/bs';
-import { MdOutlineDeleteOutline } from 'react-icons/md';
 import { Button, Dropdown, Space } from 'antd';
-import { DownOutlined } from '@ant-design/icons';
 
-const PostHeader = ({ post, user, deletePost }) => {
+const PostHeader = ({ post, user, deletePost, handleUpdate, newData }) => {
   const isCurrentUserPost = user._id === post.user._id;
 
   const menuItems = [
@@ -16,6 +14,11 @@ const PostHeader = ({ post, user, deletePost }) => {
     },
     {
       type: 'divider',
+    },
+    isCurrentUserPost && {
+      label: 'Update',
+      key: 'update',
+      onClick: () => handleUpdate(post),
     },
     isCurrentUserPost && {
       label: 'Delete',
@@ -38,7 +41,7 @@ const PostHeader = ({ post, user, deletePost }) => {
         <div className=''>
           <Link to={'/trip/user/' + post.user?._id}>
             <p className='font-medium text-lg text-ascent-1'>
-              {post.user?.username}
+              {post.user?.username||post.user}
             </p>
           </Link>
           <span className='text-ascent-2'>

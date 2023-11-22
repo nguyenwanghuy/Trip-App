@@ -8,6 +8,8 @@ import FriendListDropdown from './FriendListDropdown';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { Option } from 'antd/es/mentions';
+import { Upload } from 'antd';
+import ImgCrop from 'antd-img-crop';
 
 const PostModal = ({
   handlePostSubmit,
@@ -24,7 +26,28 @@ const PostModal = ({
   const [content, setContent] = useState('');
   const [visibility, setVisibility] = useState('isPublic');
 
+  const handleRemoveFile = (index) => {
+    const updatedFiles = [...file];
+    updatedFiles.splice(index, 1);
+    setFile(updatedFiles);
+  };
+
   // const { Option } = Select;
+
+  const onPreview = async (file) => {
+    let src = file.url;
+    if (!src) {
+      src = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file.originFileObj);
+        reader.onload = () => resolve(reader.result);
+      });
+    }
+    const image = new Image();
+    image.src = src;
+    const imgWindow = window.open(src);
+    imgWindow?.document.write(image.outerHTML);
+  };
 
   const {
     register,
@@ -100,25 +123,42 @@ const PostModal = ({
             className='bg-primary px-4 rounded-lg '
           >
             <div className='w-full items-center gap-2 py-4 border-b border-[#66666645]'>
-              <Select
-                style={{ width: '100%' }}
-                placeholder='Select post visibility'
-                onChange={(value) => setVisibility(value)}
-                value={visibility}
-              >
-                <Option value='isPublic'>Public</Option>
-                <Option value='isPrivate'>Private</Option>
-                <Option value='isFriends'>Friends</Option>
-              </Select>
-              {visibility === 'isFriends' && (
-                <FriendListDropdown
-                  friends={user.friends}
-                  onSelectFriend={(selectedFriends) => {
-                    setSelectedFriends(selectedFriends);
-                  }}
-                  selectedFriends={selectedFriends}
-                />
-              )}
+              <div className='flex gap-4'>
+                <div>
+                  <img
+                    src={user?.avatar}
+                    alt={user.username}
+                    className='w-16 h-16 object-cover rounded-full'
+                  />
+                </div>
+                <div className='flex flex-col gap-2'>
+                  <div className='font-medium text-lg text-ascent-1'>
+                    {user.username}
+                  </div>
+                  <div>
+                    <Select
+                      style={{ width: '100%' }}
+                      placeholder='Select post visibility'
+                      onChange={(value) => setVisibility(value)}
+                      value={visibility}
+                    >
+                      <Option value='isPublic'>Public</Option>
+                      <Option value='isPrivate'>Private</Option>
+                      <Option value='isFriends'>Friends</Option>
+                    </Select>
+                    {visibility === 'isFriends' && (
+                      <FriendListDropdown
+                        friends={user.friends}
+                        onSelectFriend={(selectedFriends) => {
+                          setSelectedFriends(selectedFriends);
+                        }}
+                        selectedFriends={selectedFriends}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <TextInput
                 styles='w-full rounded-full py-5 border-none '
                 placeholder='Description...'
@@ -142,12 +182,19 @@ const PostModal = ({
 
               <ul className='flex my-4'>
                 {file.map((selectedFile, index) => (
-                  <li key={index}>
+                  <li key={index} className='relative'>
                     <img
                       className='h-12 w-12 '
                       src={URL.createObjectURL(selectedFile)}
                       alt={`Selected Image ${index}`}
                     />
+                    <button
+                      type='button'
+                      className='absolute top-0 right-0 bg-red-500 text-white rounded-full p-1'
+                      onClick={() => handleRemoveFile(index)}
+                    >
+                      X
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -184,6 +231,18 @@ const PostModal = ({
                 <BiImages />
                 <span>Image</span>
               </label>
+
+              {/* <ImgCrop rotationSlider>
+                <Upload
+                  action='http://api.cloudinary.com/v1_1/dmlc8hjzu/image/upload/'
+                  listType='picture-card'
+                  fileList={file}
+                  onChange={handleFileChange}
+                  onPreview={(file) => onPreview(file)}
+                >
+                  {file.length < 5 && '+ Upload'}
+                </Upload>
+              </ImgCrop> */}
 
               <label
                 className='flex items-center gap-1 text-base text-ascent-2 hover:text-ascent-1 cursor-pointer'

@@ -45,7 +45,10 @@ const uploadAvatar = async (req, res) => {
 const getUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await UserModel.findById(id).select('-password');
+    const user = await UserModel.findById(id).select('-password').populate({
+      path: 'friends',
+      select: 'avatar username',
+    });
     res.status(200).json({
       data: user,
       message: 'User here',
@@ -90,8 +93,13 @@ const searchUsers = async (req, res) => {
     const searchTerm = req.query.term?.toString();
     const searchUsers = await UserModel.find({ username: { $regex: searchTerm } }).select('username avatar')
     if (!searchUsers)
-      return res.status(404).json({ message: 'User not found' })
-    const searchContent = await PostModel.find({ content: { $regex: searchTerm } });
+      return res.status(404).json({ message: 'User not found' });
+    const searchContent = await PostModel.find({
+      content: { $regex: searchTerm },
+    }).populate({
+      path: 'user',
+      select: 'username avatar',
+    });
     if (!searchContent)
       return res.status(404).json({ message: 'Post not found' });
     res.status(200).json({

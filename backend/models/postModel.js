@@ -40,6 +40,12 @@ const PostSchema = new mongoose.Schema(
       enum: ['private', 'public', 'friends'],
       default: 'public',
     },
+    dateStart: {
+      type: Date,
+    },
+    dateEnd: {
+      type: Date,
+    },
   },
   { timestamps: true },
 );

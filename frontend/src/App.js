@@ -6,6 +6,7 @@ import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 import Album from './components/details/ImageDetails/Album';
 import Avatar from './components/details/ImageDetails/Avatar';
+import PostDetail from './components/Post/PostDetail';
 
 function Layout() {
   const { user } = useSelector((state) => state.user);
@@ -65,6 +66,7 @@ function App() {
           <Route path='/trip/user/search/s/:query' element={<Search />} />
           <Route path='/trip/create-album' element={<Album/>} />
           <Route path='/trip/sh-avatar' element={<Avatar/>} />
+          <Route path='/trip/post/:id' element={<PostDetail />} />
         </Route>
 
         <Route path='/register' element={<Register />} />

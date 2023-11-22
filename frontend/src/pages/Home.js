@@ -5,14 +5,13 @@ import {jwtDecode} from "jwt-decode";
 import {
   FriendsCard,
   Loading,
-  PostCard,
   ProfileCard,
-  TextInput,
   NavBar,
   PostForm,
   Weather,
   Ads,
   CustomButton,
+  PostCard,
 } from '../components';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -21,11 +20,13 @@ import {
   apiRequest,
   getUserInfo,
   handleFileUpload,
-  // sendFollowRequest,
   sendFriendRequest,
 } from '../utils';
 import UseFunction from '../components/Function/UseFunction';
 import { userLogin } from '../redux/userSlice';
+import UpdatePostModal from '../components/UpdatePostModal ';
+import FriendRequests from '../components/FriendRequestCard';
+import SuggestedFriends from '../components/SuggestedFriends';
 
 const Home = () => {
   const { user } = useSelector((state) => state.user);
@@ -37,6 +38,7 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [posting, setPosting] = useState(false);
   const [show, setShow] = useState(true);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
 
   const { handleLikePost, fetchPost, handleDeletePost } = UseFunction();
 
@@ -51,6 +53,7 @@ const Home = () => {
 //o
   const handleFileChange = (e) => {
     const selectedFiles = e.target.files;
+    console.log([...file, ...selectedFiles]);
     setFile([...file, ...selectedFiles]);
   };
 
@@ -114,6 +117,26 @@ const Home = () => {
     }
   };
 
+  const updatePost = async (postId, newData) => {
+    try {
+      const res = await apiRequest({
+        url: `/post/${postId}`,
+        token: user?.token,
+        data: newData,
+        method: 'PUT',
+      });
+
+      if (res?.status === 'failed') {
+        console.error('Post update failed:', res.message);
+      } else {
+        console.log('Post updated successfully:', res.data);
+        await fetchPost();
+      }
+    } catch (error) {
+      console.error('Error updating post:', error);
+    }
+  };
+
   const fetchSuggestedRequests = async () => {
     try {
       const res = await apiRequest({
@@ -127,15 +150,6 @@ const Home = () => {
       console.log(error);
     }
   };
-
-  // const handleFollow = async (id) => {
-  //   try {
-  //     await sendFollowRequest(user.token, user._id, id);
-  //     await fetchSuggestedRequests();
-  //   } catch (error) {
-  //     console.error('Error during follow request:', error);
-  //   }
-  // };
 
   const handleFriendRequest = async (id) => {
     try {
@@ -219,10 +233,8 @@ const Home = () => {
     )
 
   useEffect(() => {
-    // setLoading(true);
     fetchPost();
     fetchSuggestedRequests();
-    // handleFollow();
     handleFriendRequest();
     handleAcceptFriendRequest();
     handleFetchFriendRequest();
@@ -266,8 +278,10 @@ const Home = () => {
                       post={post}
                       user={user}
                       deletePost={handleDeletePost}
+                      updatePost={updatePost}
                       likePost={handleLikePost}
                       id={post?._id}
+                      file={file}
                     />
                   ))}
               </>
@@ -278,99 +292,28 @@ const Home = () => {
             )}
           </div>
 
+          {updateModalOpen && (
+            <UpdatePostModal
+              post={selectedPost}
+              updatePost={updatePost}
+              onClose={() => setUpdateModalOpen(false)}
+              initialFile={selectedPost.image[0]}
+              initialDescription={selectedPost.description}
+            />
+          )}
+
           {/* RIGHT */}
           <div className='hidden w-1/5 h-full lg:flex flex-col gap-8 overflow-y-auto'>
-            {/* FRIEND REQUEST */}
-            <div className='w-full bg-primary shadow-sm rounded-lg px-6 py-5'>
-              <div className='flex items-center justify-between text-xl text-ascent-1 pb-2 border-b border-[#66666645]'>
-                <span> Friend Request</span>
-                <span>{friendRequest?.length}</span>
-              </div>
+            <FriendRequests
+              friendRequest={friendRequest}
+              handleAcceptFriendRequest={handleAcceptFriendRequest}
+            />
 
-              <div className='w-full flex flex-col gap-4 pt-4'>
-                {friendRequest?.map(({ _id, requestFrom: from }) => (
-                  <div key={_id} className='flex items-center justify-between'>
-                    <Link
-                      to={'/trip/user/' + from._id}
-                      className='w-full flex gap-4 items-center cursor-pointer'
-                    >
-                      <img
-                        src={from?.avatar}
-                        alt={from?.username}
-                        className='w-10 h-10 object-cover rounded-full'
-                      />
-                      <div className='flex-1'>
-                        <p className='text-base font-medium text-ascent-1'>
-                          {from?.username}
-                        </p>
-                      </div>
-                    </Link>
-
-                    <div className='flex gap-1'>
-                      <CustomButton
-                        title='Accept'
-                        containerStyles='bg-[#0444a4] text-xs text-white px-1.5 py-1 rounded-full'
-                        onClick={() =>
-                          handleAcceptFriendRequest(_id, 'Accepted')
-                        }
-                      />
-                      <CustomButton
-                        title='Deny'
-                        containerStyles='border border-[#666] text-xs text-ascent-1 px-1.5 py-1 rounded-full'
-                        onClick={() => handleAcceptFriendRequest(_id, 'Denied')}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* SUGGESTED FRIENDS */}
-            <div className='w-full bg-primary shadow-sm rounded-lg px-5 py-5'>
-              <div className='flex items-center justify-between text-lg text-ascent-1 border-b border-[#66666645]'>
-                <span>Friend Suggestion</span>
-              </div>
-              <div className='w-full flex flex-col gap-4 pt-4'>
-                {suggestedFriends?.map((friend) => (
-                  <div
-                    className='flex items-center justify-between'
-                    key={friend._id}
-                  >
-                    <Link
-                      to={'/trip/user/' + friend._id}
-                      key={friend?._id}
-                      className='w-full flex gap-4 items-center cursor-pointer'
-                    >
-                      <img
-                        src={friend?.avatar}
-                        alt={friend?.username}
-                        className='w-10 h-10 object-cover rounded-full'
-                      />
-                      <div className='flex-1 '>
-                        <p className='text-base font-medium text-ascent-1'>
-                          {friend?.username}
-                        </p>
-                        <span className='text-sm text-ascent-2'>
-                          {/* {friend?.profession ?? 'No Profession'} */}
-                        </span>
-                      </div>
-                    </Link>
-
-                    <div className='flex gap-1'>
-                      <button
-                        className='bg-[#0444a430] text-sm text-white p-1 rounded'
-                        onClick={() => {
-                          handleFriendRequest(friend._id);
-                          setShow(false);
-                        }}
-                      >
-                        <BsPersonFillAdd size={20} className='text-[#0f52b6]' />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <SuggestedFriends
+              suggestedFriends={suggestedFriends}
+              handleFriendRequest={handleFriendRequest}
+              setShow={setShow}
+            />
             <Ads />
           </div>
         </div>
