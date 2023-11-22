@@ -1,24 +1,24 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  posts: {},
+  albums: {},
 };
 
-const postSlice = createSlice({
-  name: 'post',
+const albumSlice = createSlice({
+  name: 'album',
   initialState,
   reducers: {
-    getPosts(state, action) {
+    getAlbums(state, action) {
       state.posts = action.payload;
     },
   },
 });
 
-export default postSlice.reducer;
+export default albumSlice.reducer;
 
-export function SetPosts(post) {
+export function SetAlbums(album) {
   return (dispatch, getState) => {
-    dispatch(postSlice.actions.getPosts(post));
+    dispatch(albumSlice.actions.getAlbums(album));
   };
 }
 

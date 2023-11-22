@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import axios from 'axios';
+import {jwtDecode} from "jwt-decode";
 import {
   FriendsCard,
   Loading,
@@ -48,7 +50,7 @@ const Home = () => {
     reset,
     formState: { errors },
   } = useForm();
-
+//o
   const handleFileChange = (e) => {
     const selectedFiles = e.target.files;
     console.log([...file, ...selectedFiles]);
@@ -60,7 +62,7 @@ const Home = () => {
     PUBLIC: 'public',
     FRIENDS: 'friends',
   };
-
+//1
   const handlePostSubmit = async (data, selectedFriends, visibility) => {
     setPosting(true);
     setErrMsg('');
@@ -196,6 +198,39 @@ const Home = () => {
       console.error(error);
     }
   };
+
+  // refresh token
+  const refreshToken = async () =>{
+    try {
+      const res = axios.post(
+        "http://localhost:8001/trip/auth/refresh",{
+          withCredentials: true
+        });
+        return res.data;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  let axiosJWT = axios.create();
+  axiosJWT.interceptors.request.use(
+    async(config) => {
+      let date = new Date();
+      const decodedToken = jwtDecode(user?.token)
+      if(decodedToken.exp < date.getTime()/1000) {
+        const data = await refreshToken();
+        const refreshUser = {
+          ...user,
+          token: data.token,
+        };
+        dispatch(userLogin(refreshUser))
+        config.headers["token"] = data.token;
+      }
+      return config;
+    },
+    (err) =>{
+      return Promise.reject(err);
+    }
+    )
 
   useEffect(() => {
     fetchPost();

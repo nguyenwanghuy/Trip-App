@@ -4,6 +4,8 @@ import { Home, Login, Profile, Register, ResetPassword, Search } from './pages';
 import { userLogin } from './redux/userSlice';
 import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
+import Album from './components/details/ImageDetails/Album';
+import Avatar from './components/details/ImageDetails/Avatar';
 import PostDetail from './components/Post/PostDetail';
 
 function Layout() {
@@ -62,6 +64,8 @@ function App() {
           <Route path='/' element={<Home />} />
           <Route path='/trip/user/:id?' element={<Profile />} />
           <Route path='/trip/user/search/s/:query' element={<Search />} />
+          <Route path='/trip/create-album' element={<Album/>} />
+          <Route path='/trip/sh-avatar' element={<Avatar/>} />
           <Route path='/trip/post/:id' element={<PostDetail />} />
         </Route>
 

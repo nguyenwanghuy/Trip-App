@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { SetPosts } from '../redux/postSlice';
+import { SetPosts } from '../redux/postSlice.js';
+import { SetAlbums } from '../redux/albumSlice.js';
 import { axiosJWT, refreshToken } from './api.js';
 
 const API_URL = 'http://localhost:8001/trip';
@@ -9,7 +10,7 @@ export const API = axios.create({
   responseType: 'json',
 });
 
-export const apiRequest = async ({ url, token, data, method }) => {
+export const apiRequest = async ({ url, token, data, method , axiosJWT }) => {
   try {
     const result = await API({
       url: url,
@@ -96,7 +97,7 @@ export const handleAvatarUpload = async ({ file, token }) => {
     return null;
   }
 };
-
+//giong post
 export const fetchPosts = async (token, dispatch, uri, data) => {
   try {
     const res = await apiRequest({
@@ -137,7 +138,7 @@ export const deletePost = async (id, token) => {
     console.log(error);
   }
 };
-
+//end
 export const getUserInfo = async (token) => {
   try {
     const res = await apiRequest({
@@ -167,7 +168,7 @@ export const searchUser = async (token, query) => {
     });
     return res;
   } catch (error) {
-    logError(error);
+    console.log(error);
     throw error;
   }
 };
@@ -198,3 +199,49 @@ export const sendFriendRequest = async (token, id) => {
     console.log(error);
   }
 };
+
+
+// làm album
+
+
+export const fetchAlbums = async (token, dispatch, uri, data) => {
+  try {
+    const res = await apiRequest({
+      url: uri || '/album',
+      token,
+      method: 'GET',
+      data: data || {},
+    });
+    dispatch(SetAlbums(res?.data));
+    return;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const likeAlbums = async ({ uri, token }) => {
+  try {
+    const res = await apiRequest({
+      url: uri,
+      token,
+      method: 'POST',
+    });
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const deleteAlbums = async (id, token) => {
+  try {
+    const res = await apiRequest({
+      url: '/album/' + id,
+      token,
+      method: 'DELETE',
+    });
+    return;
+  } catch (error) {
+    console.log(error);
+  }
+};
+//end
