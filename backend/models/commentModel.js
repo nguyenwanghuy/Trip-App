@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 
-const commentSchema = new mongoose.Schema(
+const CommentSchema = new mongoose.Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: 'users' },
     post: { type: Schema.Types.ObjectId, ref: 'posts' },
@@ -20,6 +20,6 @@ const commentSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-const CommentModel = mongoose.model('Comments', commentSchema);
+const CommentModel = mongoose.model('comments', CommentSchema);
 
 export default CommentModel;

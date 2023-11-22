@@ -183,7 +183,7 @@ const requestRefreshToken = async (req, res) => {
   // Khi nào access token hết hạn thì lấy refresh token để tạo một access token mới
   // Lấy refresh token từ cookies
   const refreshToken = req.cookies.refreshToken;
-  console.log(refreshToken);
+  // console.log(refreshToken);
   if (!refreshToken) {
     return res.status(401).json({
       message: 'You are not authenticated',

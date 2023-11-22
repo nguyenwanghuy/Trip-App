@@ -24,7 +24,6 @@ import {
   // sendFollowRequest,
   sendFriendRequest,
 } from '../utils';
-import PostForm from '../components/PostForm';
 import UseFunction from '../components/Function/UseFunction';
 import { userLogin } from '../redux/userSlice';
 
@@ -49,7 +48,7 @@ const Home = () => {
     reset,
     formState: { errors },
   } = useForm();
-
+//o
   const handleFileChange = (e) => {
     const selectedFiles = e.target.files;
     setFile([...file, ...selectedFiles]);
@@ -60,7 +59,7 @@ const Home = () => {
     PUBLIC: 'public',
     FRIENDS: 'friends',
   };
-
+//1
   const handlePostSubmit = async (data, selectedFriends, visibility) => {
     setPosting(true);
     setErrMsg('');

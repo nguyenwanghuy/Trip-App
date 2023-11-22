@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { NavBar, PostCard } from '../components';
 import { useParams } from 'react-router-dom';
-import { apiRequest, fetchPosts, likePost } from '../utils';
+import { apiRequest, deletePost, fetchPosts, likePost } from '../utils';
 import { useSelector } from 'react-redux';
 
 const Search = () => {
