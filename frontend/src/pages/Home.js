@@ -37,7 +37,6 @@ const Home = () => {
   const [posting, setPosting] = useState(false);
   const [show, setShow] = useState(true);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
-
   const { handleLikePost, fetchPost, handleDeletePost } = UseFunction();
 
   const dispatch = useDispatch();
