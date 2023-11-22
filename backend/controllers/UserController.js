@@ -91,9 +91,7 @@ const addRemoveFriend = async (req, res) => {
 const searchUsers = async (req, res) => {
   try {
     const searchTerm = req.query.term?.toString();
-    const searchUsers = await UserModel.find({
-      username: { $regex: searchTerm },
-    }).select('username avatar');
+    const searchUsers = await UserModel.find({ username: { $regex: searchTerm } }).select('username avatar')
     if (!searchUsers)
       return res.status(404).json({ message: 'User not found' });
     const searchContent = await PostModel.find({

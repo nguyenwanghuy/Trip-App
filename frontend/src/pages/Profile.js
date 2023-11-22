@@ -144,7 +144,7 @@ const Profile = () => {
       case 'friends':
         return <FriendsProfile userInfo={userInfo} />;
       case 'images':
-        return <ImagesProfile />;
+        return <ImagesProfile userInfo={userInfo}/>;
       default:
         return <PostProfile user={user} UserId={id} userInfo={userInfo} />;
     }
