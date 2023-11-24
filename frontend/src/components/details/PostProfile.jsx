@@ -22,7 +22,6 @@ const PostProfile = ({ user, UserId, userInfo }) => {
           token: user.token,
           method: 'GET',
         });
-        console.log(res);
         setPosts(res.posts);
         setLoading(false);
       } catch (error) {

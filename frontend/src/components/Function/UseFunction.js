@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { apiRequest, deletePost, fetchPosts, likePost, fetchAlbums,likeAlbums,deleteAlbums } from '../../utils';
-
+import {
+  apiRequest,
+  deletePost,
+  fetchPosts,
+  likePost,
+  fetchAlbums,
+  likeAlbums,
+  deleteAlbums,
+} from '../../utils';
 
 const UseFunction = (id) => {
   const [loading, setLoading] = useState(false);
@@ -38,7 +45,6 @@ const UseFunction = (id) => {
     await fetchPosts(user?.token, dispatch);
     setLoading(false);
   };
-
 
   //album
   const handleLikeAlbum = async (uri) => {
@@ -86,14 +92,19 @@ const UseFunction = (id) => {
     }
   };
 
+  useEffect(() => {
+    fetchAlbum();
+  }, []);
+
   return {
     handleLikePost,
     handleDeletePost,
     fetchUserData,
     fetchPost,
     loading,
-    handleLikeAlbum,handleDeleteAlbum,fetchAlbum
-
+    handleLikeAlbum,
+    handleDeleteAlbum,
+    fetchAlbum,
   };
 };
 

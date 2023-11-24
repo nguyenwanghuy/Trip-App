@@ -1,23 +1,12 @@
 import mongoose from 'mongoose';
 
-
-const ImageSchema = new mongoose.Schema({
-  url: {
-    type: String,
-    required: true
-  },
-  description: {
-    type: String
-  }
-});
-
 const AlbumSchema = new mongoose.Schema(
   {
-    content: {
+    albumName: {
       type: String,
       required: true,
     },
-    image: [ImageSchema],
+    images: [],
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'users',
@@ -48,6 +37,5 @@ const AlbumSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
-
 const AlbumModel = mongoose.model('albums', AlbumSchema);
 export default AlbumModel;

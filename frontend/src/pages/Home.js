@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from 'jwt-decode';
 import {
   FriendsCard,
   Loading,
@@ -49,7 +49,7 @@ const Home = () => {
     reset,
     formState: { errors },
   } = useForm();
-//o
+  //o
   const handleFileChange = (e) => {
     const selectedFiles = e.target.files;
     console.log([...file, ...selectedFiles]);
@@ -61,7 +61,7 @@ const Home = () => {
     PUBLIC: 'public',
     FRIENDS: 'friends',
   };
-//1
+  //1
   const handlePostSubmit = async (data, selectedFriends, visibility) => {
     setPosting(true);
     setErrMsg('');
@@ -199,37 +199,36 @@ const Home = () => {
   };
 
   // refresh token
-  const refreshToken = async () =>{
+  const refreshToken = async () => {
     try {
-      const res = axios.post(
-        "http://localhost:8001/trip/auth/refresh",{
-          withCredentials: true
-        });
-        return res.data;
+      const res = axios.post('http://localhost:8001/trip/auth/refresh', {
+        withCredentials: true,
+      });
+      return res.data;
     } catch (error) {
       console.log(error);
     }
-  }
+  };
   let axiosJWT = axios.create();
   axiosJWT.interceptors.request.use(
-    async(config) => {
+    async (config) => {
       let date = new Date();
-      const decodedToken = jwtDecode(user?.token)
-      if(decodedToken.exp < date.getTime()/1000) {
+      const decodedToken = jwtDecode(user?.token);
+      if (decodedToken.exp < date.getTime() / 1000) {
         const data = await refreshToken();
         const refreshUser = {
           ...user,
           token: data.token,
         };
-        dispatch(userLogin(refreshUser))
-        config.headers["token"] = data.token;
+        dispatch(userLogin(refreshUser));
+        config.headers['token'] = data.token;
       }
       return config;
     },
-    (err) =>{
+    (err) => {
       return Promise.reject(err);
-    }
-    )
+    },
+  );
 
   useEffect(() => {
     fetchPost();
@@ -241,83 +240,81 @@ const Home = () => {
   }, []);
 
   return (
-    <>
-      <div className='w-full px-0 lg:px-10 2xl:px-20 bg-bgColor lg:rounded-lg h-screen overflow-hidden'>
-        <NavBar />
+    <div className='w-full px-0 lg:px-10 2xl:px-20 bg-bgColor lg:rounded-lg h-screen pb-10 overflow-hidden'>
+      <NavBar />
 
-        <div className='w-full flex gap-2 lg:gap-4 pt-5 pb-10 h-full'>
-          {/* LEFT */}
-          <div className='hidden w-1/3 lg:w-1/5 h-full md:flex flex-col gap-6 overflow-y-auto'>
-            <ProfileCard user={user} />
-            <FriendsCard friends={user.friends} />
-            <Weather />
-          </div>
+      <div className='w-full flex gap-2 lg:gap-4 pt-5 pb-10 h-full'>
+        {/* LEFT */}
+        <div className='hidden w-1/3 lg:w-1/5  md:flex flex-col gap-6 overflow-y-auto'>
+          <ProfileCard user={user} />
+          <FriendsCard friends={user.friends} />
+          <Weather />
+        </div>
 
-          {/* CENTER */}
-          <div className='flex-1 h-full px-4 flex flex-col gap-6 overflow-y-auto rounded-lg'>
-            <PostForm
-              user={user}
-              handlePostSubmit={handlePostSubmit}
-              handleFileChange={handleFileChange}
-              posting={posting}
-              errMsg={errMsg}
-              setFile={setFile}
-              file={file}
-            />
+        {/* CENTER */}
+        <div className='flex-1 h-full px-4 flex flex-col gap-6 overflow-y-auto rounded-lg'>
+          <PostForm
+            user={user}
+            handlePostSubmit={handlePostSubmit}
+            handleFileChange={handleFileChange}
+            posting={posting}
+            errMsg={errMsg}
+            setFile={setFile}
+            file={file}
+          />
 
-            {loading ? (
-              <Loading />
-            ) : posts?.length > 0 ? (
-              <>
-                {posts
-                  .filter((post) => post.viewers.includes(user._id))
-                  .map((post) => (
-                    <PostCard
-                      key={post?._id}
-                      post={post}
-                      user={user}
-                      deletePost={handleDeletePost}
-                      updatePost={updatePost}
-                      likePost={handleLikePost}
-                      id={post?._id}
-                      file={file}
-                    />
-                  ))}
-              </>
-            ) : (
-              <div className='flex w-full h-full items-center justify-center'>
-                <p className='text-lg text-ascent-2'>No Post Available</p>
-              </div>
-            )}
-          </div>
-
-          {updateModalOpen && (
-            <UpdatePostModal
-              post={selectedPost}
-              updatePost={updatePost}
-              onClose={() => setUpdateModalOpen(false)}
-              initialFile={selectedPost.image[0]}
-              initialDescription={selectedPost.description}
-            />
+          {loading ? (
+            <Loading />
+          ) : posts?.length > 0 ? (
+            <>
+              {posts
+                .filter((post) => post.viewers.includes(user._id))
+                .map((post) => (
+                  <PostCard
+                    key={post?._id}
+                    post={post}
+                    user={user}
+                    deletePost={handleDeletePost}
+                    updatePost={updatePost}
+                    likePost={handleLikePost}
+                    id={post?._id}
+                    file={file}
+                  />
+                ))}
+            </>
+          ) : (
+            <div className='flex w-full h-full items-center justify-center'>
+              <p className='text-lg text-ascent-2'>No Post Available</p>
+            </div>
           )}
+        </div>
 
-          {/* RIGHT */}
-          <div className='hidden w-1/5 h-full lg:flex flex-col gap-8 overflow-y-auto'>
-            <FriendRequests
-              friendRequest={friendRequest}
-              handleAcceptFriendRequest={handleAcceptFriendRequest}
-            />
+        {updateModalOpen && (
+          <UpdatePostModal
+            post={selectedPost}
+            updatePost={updatePost}
+            onClose={() => setUpdateModalOpen(false)}
+            initialFile={selectedPost.image[0]}
+            initialDescription={selectedPost.description}
+          />
+        )}
 
-            <SuggestedFriends
-              suggestedFriends={suggestedFriends}
-              handleFriendRequest={handleFriendRequest}
-              setShow={setShow}
-            />
-            <Ads />
-          </div>
+        {/* RIGHT */}
+        <div className='hidden w-1/5 h-full lg:flex flex-col gap-8 overflow-y-auto'>
+          <FriendRequests
+            friendRequest={friendRequest}
+            handleAcceptFriendRequest={handleAcceptFriendRequest}
+          />
+
+          <SuggestedFriends
+            suggestedFriends={suggestedFriends}
+            handleFriendRequest={handleFriendRequest}
+            setShow={setShow}
+          />
+          <Ads />
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

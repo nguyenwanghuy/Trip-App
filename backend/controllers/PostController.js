@@ -321,19 +321,19 @@ const getPostById = async (req, res) => {
   }
 };
 
-const uploadVideo = async (req,res) => {
+const uploadVideo = async (req, res) => {
   try {
-  const file = req.file
-const result = await cloudinary.uploader.upload(file.path, {
-  resource_type:'auto',
-  folder: 'SOCIALMEDIA'
-})
-fs.unlinkSync(file.path)
-const videoUrl = result && result.secure_url
-return res.status(200).json({
-  data:videoUrl,
-  message: 'upload video successfully'
-})
+    const file = req.file;
+    const result = await cloudinary.uploader.upload(file.path, {
+      resource_type: 'auto',
+      folder: 'SOCIALMEDIA',
+    });
+    fs.unlinkSync(file.path);
+    const videoUrl = result && result.secure_url;
+    return res.status(200).json({
+      data: videoUrl,
+      message: 'upload video successfully',
+    });
   } catch (error) {
     res.status(500).json({ error: 'upload failed' });
   }
@@ -349,6 +349,6 @@ const PostCtrl = {
   checkViewFriend,
   checkViewPrivate,
   getPostById,
-  uploadVideo
+  uploadVideo,
 };
 export default PostCtrl;

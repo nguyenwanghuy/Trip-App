@@ -10,7 +10,7 @@ export const API = axios.create({
   responseType: 'json',
 });
 
-export const apiRequest = async ({ url, token, data, method , axiosJWT }) => {
+export const apiRequest = async ({ url, token, data, method }) => {
   try {
     const result = await API({
       url: url,
@@ -32,6 +32,8 @@ export const apiRequest = async ({ url, token, data, method , axiosJWT }) => {
     console.log(err.error.message);
     if (err.error.message === 'jwt expired') {
       const refreshedToken = await refreshToken();
+
+      console.log(refreshedToken);
 
       if (refreshedToken) {
         return apiRequest({ url, token: refreshedToken, data, method });
@@ -106,6 +108,7 @@ export const fetchPosts = async (token, dispatch, uri, data) => {
       method: 'GET',
       data: data || {},
     });
+    console.log(res);
     dispatch(SetPosts(res?.data));
     return;
   } catch (error) {
@@ -200,9 +203,7 @@ export const sendFriendRequest = async (token, id) => {
   }
 };
 
-
 // làm album
-
 
 export const fetchAlbums = async (token, dispatch, uri, data) => {
   try {
@@ -212,6 +213,8 @@ export const fetchAlbums = async (token, dispatch, uri, data) => {
       method: 'GET',
       data: data || {},
     });
+
+    console.log(res);
     dispatch(SetAlbums(res?.data));
     return;
   } catch (error) {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { apiRequest } from '../../utils';
+import { apiRequest, likePost } from '../../utils';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Comment from '../Comment/Comment';

@@ -9,17 +9,14 @@ const albumSlice = createSlice({
   initialState,
   reducers: {
     getAlbums(state, action) {
-      state.posts = action.payload;
+      state.albums = action.payload;
     },
   },
 });
-
 export default albumSlice.reducer;
 
 export function SetAlbums(album) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     dispatch(albumSlice.actions.getAlbums(album));
   };
 }
-
-// giống state

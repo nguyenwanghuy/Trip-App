@@ -34,12 +34,12 @@ const refreshToken = async (user, dispatch) => {
     if (decodedToken.exp < date.getTime() / 1000) {
       const refreshUser = {
         ...user,
-        token: res.data.token,
+        token: res.token,
       };
 
       dispatch(userLogin(refreshUser));
 
-      return res.data.token;
+      return res.token;
     }
 
     return user.token;

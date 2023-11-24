@@ -40,7 +40,6 @@ const Profile = () => {
         token: user.token,
         method: 'GET',
       });
-      console.log(res);
       setUserInfo(res.data);
       setLoading(false);
     } catch (error) {
@@ -130,25 +129,34 @@ const Profile = () => {
     setModalVisible(false);
   };
 
-  useEffect(() => {
-    setLoading(true);
-    fetchUserData();
-  }, [id]);
-
   const renderContent = () => {
     switch (activeComponent) {
       case 'introduce':
-        return (
+        return userInfo ? (
           <IntroduceProfile userInfo={userInfo} fetchUserData={fetchUserData} />
-        );
+        ) : null;
       case 'friends':
-        return <FriendsProfile userInfo={userInfo} />;
+        return userInfo ? <FriendsProfile userInfo={userInfo} /> : null;
       case 'images':
-        return <ImagesProfile userInfo={userInfo}/>;
+        return userInfo ? (
+          <ImagesProfile user={user} UserId={id} userInfo={userInfo} />
+        ) : null;
       default:
         return <PostProfile user={user} UserId={id} userInfo={userInfo} />;
     }
   };
+
+  const handleTabChange = (tabKey) => {
+    setActiveComponent(tabKey);
+    localStorage.setItem('activeTab', tabKey);
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    fetchUserData();
+    const storedActiveTab = localStorage.getItem('activeTab');
+    setActiveComponent(storedActiveTab || 'posts');
+  }, [id]);
 
   return (
     <div>
@@ -185,19 +193,19 @@ const Profile = () => {
 
           <div className='absolute bottom-[-1.5rem] flex'>
             <Button
-              onClick={() => setActiveComponent('posts')}
+              onClick={() => handleTabChange('posts')}
               className='bg-primary rounded-tr-3xl rounded-tl-none rounded-bl-3xl rounded-br-none text-ascent-1 text-sm text-center flex items-center justify-center px-10 py-4 m-2 shadow-inner'
             >
               Post
             </Button>
             <Button
-              onClick={() => setActiveComponent('introduce')}
+              onClick={() => handleTabChange('introduce')}
               className='bg-primary rounded-tr-3xl rounded-tl-none rounded-bl-3xl rounded-br-none text-ascent-1 text-sm text-center flex items-center justify-center px-10 py-4 m-2 shadow-inner'
             >
               Giới thiệu
             </Button>
             <Button
-              onClick={() => setActiveComponent('friends')}
+              onClick={() => handleTabChange('friends')}
               className='bg-primary rounded-tr-3xl rounded-tl-none rounded-bl-3xl rounded-br-none text-ascent-1 text-sm text-center flex items-center justify-center px-10 py-4 m-2 shadow-inner '
             >
               Bạn bè
@@ -212,35 +220,6 @@ const Profile = () => {
         </div>
 
         <div className='content mt-10'>{renderContent()}</div>
-
-        {/* <div className='bg-primary mt-7 rounded-xl px-6 py-6 '>
-          <Tabs
-            className='text-ascent-1'
-            defaultActiveKey='1'
-            items={[
-              {
-                label: 'Posts',
-                key: '1',
-                children: <PostProfile user={user} UserId={id} />,
-              },
-              {
-                label: 'Giới thiệu',
-                key: '2',
-                children: <IntroduceProfile userInfo={userInfo} />,
-              },
-              {
-                label: 'Bạn bè',
-                key: '3',
-                children: <FriendsProfile />,
-              },
-              {
-                label: 'Ảnh',
-                key: '4',
-                children: <ImagesProfile />,
-              },
-            ]}
-          />
-        </div> */}
       </div>
 
       <Modal
