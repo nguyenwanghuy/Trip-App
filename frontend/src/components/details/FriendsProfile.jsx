@@ -1,7 +1,7 @@
 import React from 'react';
 
 const FriendsProfile = (userInfo) => {
-  console.log(userInfo.userInfo.friends);
+  // console.log(userInfo.userInfo.friends);
   return (
     <div className='grid grid-cols-2 gap-4 bg-primary rounded-lg px-4 py-4 mt-4 shadow text-ascent-1'>
       {userInfo.userInfo.friends.map((user) => (

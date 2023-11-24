@@ -13,9 +13,9 @@ const FriendsCard = ({ friends }) => {
 
         <div className='w-full flex flex-col gap-4 pt-4'>
           {friends?.map((friend) => (
-            <Link
+           <div key={friend?._id}>
+             <Link
               to={'/profile/' + friend?._id}
-              key={friend?._id}
               className='w-full flex gap-4 items-center cursor-pointer'
             >
               <img
@@ -32,6 +32,7 @@ const FriendsCard = ({ friends }) => {
                 </span>
               </div>
             </Link>
+           </div>
           ))}
         </div>
       </div>

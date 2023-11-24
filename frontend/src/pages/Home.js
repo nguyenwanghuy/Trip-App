@@ -63,7 +63,7 @@ const Home = () => {
     FRIENDS: 'friends',
   };
 //1
-  const handlePostSubmit = async (data, selectedFriends, visibility) => {
+  const handlePostSubmit = async (data, selectedFriends, visibility,dateStart,dateEnd) => {
     setPosting(true);
     setErrMsg('');
 
@@ -77,6 +77,7 @@ const Home = () => {
 
       const newData = {
         ...data,
+        dateEnd,dateStart,
         image: uploadedFiles,
         visibility:
           visibility === 'isPrivate'
@@ -129,7 +130,7 @@ const Home = () => {
       if (res?.status === 'failed') {
         console.error('Post update failed:', res.message);
       } else {
-        console.log('Post updated successfully:', res.data);
+        // console.log('Post updated successfully:', res.data);
         await fetchPost();
       }
     } catch (error) {
@@ -292,7 +293,7 @@ const Home = () => {
             )}
           </div>
 
-          {updateModalOpen && (
+          {/* {updateModalOpen && (
             <UpdatePostModal
               post={selectedPost}
               updatePost={updatePost}
@@ -300,7 +301,7 @@ const Home = () => {
               initialFile={selectedPost.image[0]}
               initialDescription={selectedPost.description}
             />
-          )}
+          )} */}
 
           {/* RIGHT */}
           <div className='hidden w-1/5 h-full lg:flex flex-col gap-8 overflow-y-auto'>

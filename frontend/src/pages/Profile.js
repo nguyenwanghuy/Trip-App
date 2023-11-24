@@ -40,7 +40,7 @@ const Profile = () => {
         token: user.token,
         method: 'GET',
       });
-      console.log(res);
+      // console.log(res);
       setUserInfo(res.data);
       setLoading(false);
     } catch (error) {
