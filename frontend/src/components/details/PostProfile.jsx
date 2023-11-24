@@ -8,7 +8,7 @@ const PostProfile = ({ user, UserId, userInfo }) => {
   const [loading, setLoading] = useState(true);
   const [posts, setPosts] = useState({});
 
-  console.log(userInfo);
+  // console.log(userInfo);
 
   const handleDelete = () => {};
 
@@ -22,7 +22,7 @@ const PostProfile = ({ user, UserId, userInfo }) => {
           token: user.token,
           method: 'GET',
         });
-        console.log(res);
+        // console.log(res);
         setPosts(res.posts);
         setLoading(false);
       } catch (error) {

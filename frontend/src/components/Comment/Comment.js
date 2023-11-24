@@ -23,7 +23,7 @@ const Comment = ({
     setEditComment(comment);
   };
 
-  console.log(post);
+  // console.log(post);
   return (
     <div className='h-full'>
       <div className='w-full border-t border-[#66666645]'>

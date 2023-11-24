@@ -147,7 +147,7 @@ export const getUserInfo = async (token) => {
       method: 'GET',
     });
 
-    console.log(res);
+    // console.log(res);
 
     if (res.message === 'jwt expired') {
       localStorage.removeItem('user');

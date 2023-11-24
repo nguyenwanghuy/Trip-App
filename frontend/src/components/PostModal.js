@@ -7,7 +7,7 @@ import { BiImages, BiSolidVideo } from 'react-icons/bi';
 import FriendListDropdown from './FriendListDropdown';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { Option } from 'antd/es/mentions';
+// import { Option } from 'antd/es/mentions';
 import { Upload } from 'antd';
 import ImgCrop from 'antd-img-crop';
 
@@ -25,14 +25,16 @@ const PostModal = ({
   const [selectedFriends, setSelectedFriends] = useState([]);
   const [content, setContent] = useState('');
   const [visibility, setVisibility] = useState('isPublic');
-
+  const [dateStart, setDateStart] = useState('')
+  const [dateEnd, setDateEnd] = useState('')
+  console.log(dateStart);
   const handleRemoveFile = (index) => {
     const updatedFiles = [...file];
     updatedFiles.splice(index, 1);
     setFile(updatedFiles);
   };
 
-  // const { Option } = Select;
+  const { Option } = Select;
 
   const onPreview = async (file) => {
     let src = file.url;
@@ -71,7 +73,7 @@ const PostModal = ({
       const data = await handleSubmit((formData) => {
         const cleanedContent = formData.content.replace(/<\/?p>/g, '');
         formData.content = cleanedContent;
-        handlePostSubmit(formData, selectedFriends, visibility);
+        handlePostSubmit(formData, selectedFriends, visibility,dateStart,dateEnd);
       })();
       reset();
       setFile([]);
@@ -87,6 +89,7 @@ const PostModal = ({
 
   const handleCancel = () => {
     setOpen(false);
+    
   };
 
   const handleVisibilityChange = (value) => {
@@ -158,10 +161,10 @@ const PostModal = ({
                   </div>
                 </div>
               </div>
-
+              {/* des */}
               <TextInput
                 styles='w-full rounded-full py-5 border-none '
-                placeholder='Description...'
+                placeholder='Nhập tiêu đề...'
                 name='description'
                 register={register('description', {
                   required: 'Write something about post',
@@ -177,6 +180,28 @@ const PostModal = ({
                   setContent(value);
                 }}
                 name='content'
+              />
+
+              <TextInput
+                styles='w-full rounded-full py-5 border-none'
+                placeholder='Nhập ngày bắt đầu...'
+                name='dateStart'
+                type='date'
+                label='Nhập ngày bắt đầu'
+                register={register('dateStart', {
+                  required: 'Write something about post',
+                })}
+              />
+
+              <TextInput
+                styles='w-full rounded-full py-5 border-none'
+                placeholder='Nhập ngày kết thúc...'
+                name='dateEnd'
+                label='Nhập ngày kết thúc'
+                type='date'
+                register={register('dateEnd', {
+                  required: 'Write something about post',
+                })}
               />
               <div className='w-full border-t border-[#66666645]'></div>
 
@@ -203,11 +228,10 @@ const PostModal = ({
             {errMsg?.message && (
               <span
                 role='alert'
-                className={`text-sm ${
-                  errMsg?.status === 'failed'
-                    ? 'text-[#f64949fe]'
-                    : 'text-[#2ba150fe]'
-                } mt-0.5`}
+                className={`text-sm ${errMsg?.status === 'failed'
+                  ? 'text-[#f64949fe]'
+                  : 'text-[#2ba150fe]'
+                  } mt-0.5`}
               >
                 {errMsg?.message}
               </span>
