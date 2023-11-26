@@ -10,7 +10,7 @@ export const API = axios.create({
   responseType: 'json',
 });
 
-export const apiRequest = async ({ url, token, data, method , axiosJWT }) => {
+export const apiRequest = async ({ url, token, data, method }) => {
   try {
     const result = await API({
       url: url,
@@ -27,65 +27,51 @@ export const apiRequest = async ({ url, token, data, method , axiosJWT }) => {
     return result.data;
   } catch (error) {
     const err = error.response.data;
-    console.log(err);
-
     console.log(err.error.message);
-    if (err.error.message === 'jwt expired') {
-      const refreshedToken = await refreshToken();
+    //   if (err.error.message === 'jwt expired') {
+    //     const refreshedToken = await refreshToken();
+    //     if (refreshedToken) {
+    //       return apiRequest({ url, token: refreshedToken, data, method });
+    //     }
+    //   }
 
-      if (refreshedToken) {
-        return apiRequest({ url, token: refreshedToken, data, method });
-      }
-    }
-
-    return { status: err.success, message: err.message };
+    //   return { status: err.success, message: err.message };
   }
 };
 
-export const handleFileUpload = async (uploadFiles) => {
-  if (!Array.isArray(uploadFiles)) {
-    uploadFiles = [uploadFiles];
-  }
-  const uploadPromises = uploadFiles.map(async (uploadFile) => {
+export const handleFileUpload = async (uploadFile) => {
+  try {
     const formData = new FormData();
     formData.append('file', uploadFile);
     formData.append('upload_preset', 'socialmedia');
 
-    try {
-      const response = await axios.post(
-        `http://api.cloudinary.com/v1_1/dmlc8hjzu/image/upload/`,
-        formData,
-      );
-      return response.data.secure_url;
-    } catch (error) {
-      console.log(error);
-    }
-  });
+    const response = await axios({
+      method: 'post',
+      url: 'https://api.cloudinary.com/v1_1/dmlc8hjzu/image/upload/',
+      data: formData,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
 
-  // Wait for all uploads to complete
-  const uploadedFileURLs = await Promise.all(uploadPromises);
-
-  return uploadedFileURLs;
+    return response.data.secure_url;
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    throw error; // Rethrow the error so that the calling code can handle it
+  }
 };
-
 export const handleAvatarUpload = async ({ file, token }) => {
   try {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await axios.post(
-      'http://localhost:8001/trip/user/upload-avatar',
-      formData,
-      {
-        headers: {
-          'x-access-token': token,
-          'Content-Type': 'multipart/form-data',
-        },
+    const response = await API.post('/user/upload-avatar', formData, {
+      headers: {
+        'x-access-token': token,
+        'Content-Type': 'multipart/form-data',
       },
-    );
-
-    console.log('Avatar Upload Response:', response.data);
-
+    });
+    console.log(response);
     if (response.data.message === 'Uploading avatar successfully') {
       return response.data.avatar;
     } else {
@@ -107,6 +93,24 @@ export const fetchPosts = async (token, dispatch, uri, data) => {
       data: data || {},
     });
     dispatch(SetPosts(res?.data));
+    return;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const fetchPostsByPage = async (token, dispatch, page, pageSize) => {
+  try {
+    const res = await apiRequest({
+      url: `/post?page=${page}&pageSize=${pageSize}`,
+      token,
+      method: 'GET',
+    });
+
+    dispatch(SetPosts(res?.data.posts));
+    setTotalPages(res?.data.totalPages);
+    setCurrentPage(page);
+    e;
     return;
   } catch (error) {
     console.log(error);
@@ -146,8 +150,6 @@ export const getUserInfo = async (token) => {
       token: token,
       method: 'GET',
     });
-
-    // console.log(res);
 
     if (res.message === 'jwt expired') {
       localStorage.removeItem('user');
@@ -200,9 +202,7 @@ export const sendFriendRequest = async (token, id) => {
   }
 };
 
-
 // làm album
-
 
 export const fetchAlbums = async (token, dispatch, uri, data) => {
   try {

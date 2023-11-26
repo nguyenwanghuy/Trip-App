@@ -12,32 +12,23 @@ const uploadAvatar = async (req, res) => {
   try {
     const { id } = req.user;
 
-    //add file
-    const file = req.file;
-    //upload file to cloudinary server
-    const result = await cloudinary.uploader.upload(file.path, {
-      resource_type: 'auto',
-      folder: 'Trip',
-    });
-    //remove temporary folder
-    fs.unlinkSync(file.path);
+    // Retrieve the avatar URL from the request body
+    const { avatar } = req.body;
+    console.log(avatar);
 
-    const avatarUrl = result && result.secure_url;
-    // url-mongo
+    // Update the user's avatar in the database
     const updateUser = await UserModel.findOneAndUpdate(
       { _id: id },
-      {
-        avatar: avatarUrl,
-      },
-      {
-        new: true,
-      },
+      { avatar },
+      { new: true },
     ).select('-password');
+
     return res.json({
       message: 'Uploading avatar successfully',
       data: updateUser,
     });
   } catch (error) {
+    console.error('Error uploading avatar:', error);
     res.status(500).send(error);
   }
 };
@@ -91,7 +82,9 @@ const addRemoveFriend = async (req, res) => {
 const searchUsers = async (req, res) => {
   try {
     const searchTerm = req.query.term?.toString();
-    const searchUsers = await UserModel.find({ username: { $regex: searchTerm } }).select('username avatar')
+    const searchUsers = await UserModel.find({
+      username: { $regex: searchTerm },
+    }).select('username avatar');
     if (!searchUsers)
       return res.status(404).json({ message: 'User not found' });
     const searchContent = await PostModel.find({

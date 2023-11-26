@@ -12,6 +12,7 @@ import {
   deletePost,
   fetchPosts,
   handleAvatarUpload,
+  handleFileUpload,
   likePost,
 } from '../utils';
 import PostProfile from '../components/details/PostProfile';
@@ -29,7 +30,7 @@ const Profile = () => {
   const [userInfo, setUserInfo] = useState({});
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [file, setFile] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [activeComponent, setActiveComponent] = useState('posts');
 
@@ -48,43 +49,9 @@ const Profile = () => {
     }
   };
 
-  // const handleUpload = async () => {
-  //   if (selectedFile) {
-  //     const formData = new FormData();
-  //     formData.append('file', selectedFile);
-
-  //     try {
-  //       const response = await axios.post(
-  //         'http://localhost:8001/trip/user/upload-avatar',
-  //         formData,
-  //         {
-  //           headers: {
-  //             'x-access-token': user.token,
-  //             'Content-Type': 'multipart/form-data',
-  //           },
-  //         },
-  //       );
-
-  //       if (response.data.message === 'Uploading avatar successfully') {
-  //         setUserInfo((prevUserInfo) => ({
-  //           ...prevUserInfo,
-  //           avatar: response.data.avatar,
-  //         }));
-  //         setModalVisible(false);
-  //       } else {
-  //         console.error('Avatar upload failed');
-  //       }
-  //     } catch (error) {
-  //       console.error(error);
-  //     }
-  //   }
-  // };
-
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-    }
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
   };
 
   const handleLikePost = async (uri) => {
@@ -102,30 +69,30 @@ const Profile = () => {
   };
 
   const handleOk = async () => {
-    if (selectedFile) {
-      try {
-        const avatarUrl = await handleAvatarUpload({
-          file: selectedFile,
+    try {
+      if (file) {
+        setUploading(true);
+
+        const uri = await handleFileUpload(file);
+
+        await apiRequest({
+          url: `/user/upload-avatar`,
           token: user.token,
+          method: 'PUT',
+          data: { avatar: uri },
         });
 
-        console.log('Avatar URL:', avatarUrl);
+        await fetchUserData();
 
-        if (avatarUrl) {
-          setUserInfo((prevUserInfo) => ({
-            ...prevUserInfo,
-            avatar: avatarUrl,
-          }));
-
-          setModalVisible(false);
-          fetchUserData();
-        }
-      } catch (error) {
-        console.error('Avatar upload failed', error);
+        setFile(null);
       }
+    } catch (error) {
+      console.error('Error updating avatar:', error);
+    } finally {
+      setUploading(false);
+      setModalVisible(false);
     }
   };
-
   const handleCancel = () => {
     setModalVisible(false);
   };
@@ -144,7 +111,7 @@ const Profile = () => {
       case 'friends':
         return <FriendsProfile userInfo={userInfo} />;
       case 'images':
-        return <ImagesProfile userInfo={userInfo}/>;
+        return <ImagesProfile userInfo={userInfo} />;
       default:
         return <PostProfile user={user} UserId={id} userInfo={userInfo} />;
     }
@@ -212,35 +179,6 @@ const Profile = () => {
         </div>
 
         <div className='content mt-10'>{renderContent()}</div>
-
-        {/* <div className='bg-primary mt-7 rounded-xl px-6 py-6 '>
-          <Tabs
-            className='text-ascent-1'
-            defaultActiveKey='1'
-            items={[
-              {
-                label: 'Posts',
-                key: '1',
-                children: <PostProfile user={user} UserId={id} />,
-              },
-              {
-                label: 'Giới thiệu',
-                key: '2',
-                children: <IntroduceProfile userInfo={userInfo} />,
-              },
-              {
-                label: 'Bạn bè',
-                key: '3',
-                children: <FriendsProfile />,
-              },
-              {
-                label: 'Ảnh',
-                key: '4',
-                children: <ImagesProfile />,
-              },
-            ]}
-          />
-        </div> */}
       </div>
 
       <Modal

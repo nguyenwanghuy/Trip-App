@@ -13,8 +13,7 @@ import { apiRequest, fetchPosts, searchUser } from '../utils';
 import { Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { DownOutlined } from '@ant-design/icons';
-import { Dropdown, Space,Menu } from 'antd';
-
+import { Dropdown, Space, Menu } from 'antd';
 
 const NavBar = () => {
   const { theme } = useSelector((state) => state.theme);
@@ -115,11 +114,6 @@ const NavBar = () => {
           trigger={['click']}
         >
           <div className='flex items-center justify-between gap-4 cursor-pointer'>
-            <img
-              src={user.avatar}
-              className='w-11 h-11 rounded-full'
-              alt='User Avatar'
-            />
             <span className='text-sm'>{user.username}</span>
           </div>
         </Dropdown>

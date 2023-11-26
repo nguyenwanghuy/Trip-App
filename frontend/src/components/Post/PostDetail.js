@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { apiRequest, likePost } from '../../utils';
 import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Carousel } from 'antd'; // Import Carousel from Ant Design
 import { useSelector } from 'react-redux';
 import Comment from '../Comment/Comment';
 import PostAction from './PostAction';
-import Slider from 'react-slick';
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
-import PostImage from './PostImage';
 import UseFunction from '../Function/UseFunction';
 import moment from 'moment';
 const PostDetail = () => {
@@ -94,48 +91,69 @@ const PostDetail = () => {
   }, [post]);
 
   //
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const handleGoBack = () => {
     navigate(-1);
   };
   return (
-    <div className='flex h-screen w-full'>
+    <div className='flex flex-col md:flex-row h-screen w-ful'>
       {post && (
         <>
           <div className='w-2/3 h-screen flex items-center justify-center bg-[black]'>
-            <Link to='/' className='flex gap-2 items-center absolute top-5 left-5'>
+            <Link
+              to='/'
+              className='flex gap-2 items-center absolute top-5 left-5'
+            >
               <div className='p-1  md:p-2 bg-[#065ad8] rounded text-white font-extrabold text-xl'>
                 TS
               </div>
-              <span className='text-xxl font-bold text-slate-400 text-white'>TripSocial</span>
+              <span className='text-xxl font-bold text-slate-400 text-white'>
+                TripSocial
+              </span>
               <button
                 className='text-white bg-transparent border-none outline-none cursor-pointer'
-                onClick={handleGoBack} style={{ marginLeft: '800px' }} >
+                onClick={handleGoBack}
+                style={{ marginLeft: '800px' }}
+              >
                 <span style={{ fontSize: '24px' }}>×</span>
               </button>
             </Link>
-
-            <img src={post.image || null} className='w-1/2 h-auto' />
-
-
+            <Carousel
+              dotPosition='bottom'
+              autoplay
+              className='w-[55rem] h-full '
+            >
+              {post.image.map((image, index) => (
+                <div key={index}>
+                  <img src={image} className='w-full h-full ' />
+                </div>
+              ))}
+            </Carousel>
           </div>
           <div className='w-1/3 mx-5 my-5 h-5/6 overflow-y-scroll'>
             <div>
               <div>
-                <div className="flex items-center ">
-                <Link to={'/trip/user/' + post.user?._id}>
-                 <img className="w-12 h-12 rounded-full object-cover" src={post.user.avatar} />
-                 </Link>
-                <div>
-                <Link to={'/trip/user/' + post.user?._id}>
-               <span><p className='text-base font-bold'>{post.user.username}</p></span>
-               </Link>
-              <div>
-              <span className='text-ascent-2'>
-            {moment(post?.createdAt ?? Date.now()).fromNow()} 
-          </span>
-                </div>
-              </div>
+                <div className='flex items-center '>
+                  <Link to={'/trip/user/' + post.user?._id}>
+                    <img
+                      className='w-12 h-12 rounded-full object-cover'
+                      src={post.user.avatar}
+                    />
+                  </Link>
+                  <div>
+                    <Link to={'/trip/user/' + post.user?._id}>
+                      <span>
+                        <p className='text-base font-bold'>
+                          {post.user.username}
+                        </p>
+                      </span>
+                    </Link>
+                    <div>
+                      <span className='text-ascent-2'>
+                        {moment(post?.createdAt ?? Date.now()).fromNow()}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
 

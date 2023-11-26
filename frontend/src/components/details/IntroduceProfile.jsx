@@ -10,11 +10,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { apiRequest, handleFileUpload } from '../../utils';
 import { updateProfile, userLogin } from '../../redux/userSlice';
 import EditProfileForm from '../Modal/EditProfile';
-import { LiaEditSolid,LiaBirthdayCakeSolid } from 'react-icons/lia';
+import { LiaEditSolid, LiaBirthdayCakeSolid } from 'react-icons/lia';
 import { FaTwitterSquare } from 'react-icons/fa';
-import { PiGenderIntersex,PiFinnTheHuman } from 'react-icons/pi';
+import { PiGenderIntersex, PiFinnTheHuman } from 'react-icons/pi';
 import { Button } from 'antd';
-import { MdDateRange,MdOutlineDescription,MdWork } from "react-icons/md";
+import { MdDateRange, MdOutlineDescription, MdWork } from 'react-icons/md';
 
 import moment from 'moment';
 const IntroduceProfile = ({ userInfo, fetchUserData }) => {
@@ -33,7 +33,16 @@ const IntroduceProfile = ({ userInfo, fetchUserData }) => {
 
     try {
       const uri = picture && (await handleFileUpload(picture));
-      const { avatar, fullname, age, dateOfBirth, gender, description,location,profession } = data;
+      const {
+        avatar,
+        fullname,
+        age,
+        dateOfBirth,
+        gender,
+        description,
+        location,
+        profession,
+      } = data;
 
       const res = await apiRequest({
         url: `/auth/me/profile/${user?._id}`,
@@ -87,15 +96,12 @@ const IntroduceProfile = ({ userInfo, fetchUserData }) => {
     setIsModalVisible(false);
   };
   //format day
-  const formatDateOfBirth =moment(userInfo.dateOfBirth).format("DD-MM-YYYY")
+  const formatDateOfBirth = moment(userInfo.dateOfBirth).format('DD-MM-YYYY');
   // console.log(userInfo);
   return (
     <div className='bg-primary px-4 py-4 rounded-md shadow-lg'>
       <div className='w-full flex flex-col gap-2 py-4  '>
         <div className=''>
-          {/* {console.log(userInfo)} */}
-        
-
           {user._id === userInfo?._id && (
             <Button
               className='flex gap-2 border-none'
@@ -105,7 +111,7 @@ const IntroduceProfile = ({ userInfo, fetchUserData }) => {
               }}
             >
               <LiaEditSolid size={22} className='text-blue cursor-pointer' />
-              Update your profile  
+              Update your profile
             </Button>
           )}
         </div>
@@ -116,17 +122,17 @@ const IntroduceProfile = ({ userInfo, fetchUserData }) => {
             <PiFinnTheHuman className='text-xl text-ascent-1' />
             <span>{userInfo.fullname} </span>
           </div>
-              {/* age */}
-              <div className='flex gap-2 items-center text-ascent-2'>
+          {/* age */}
+          <div className='flex gap-2 items-center text-ascent-2'>
             <MdDateRange className='text-xl text-ascent-1' />
             <span>{userInfo.age} tuổi </span>
           </div>
-        {/* date of birth */}
+          {/* date of birth */}
           <div className='flex gap-2 items-center text-ascent-2'>
             <LiaBirthdayCakeSolid className=' text-lg text-ascent-1' />
             <span>{formatDateOfBirth}</span>
           </div>
-        {/* gender */}
+          {/* gender */}
           <div className='flex gap-2 items-center text-ascent-2'>
             <PiGenderIntersex className='text-xl text-ascent-1' />
             <span>{userInfo.gender}</span>

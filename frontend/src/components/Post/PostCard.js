@@ -48,11 +48,22 @@ const PostCard = ({
     }
   };
 
+  const incrementPostViewCount = async (postId) => {
+    try {
+      const res = await apiRequest({
+        url: `/trip/post/view/${postId}`,
+        token: user.token,
+        method: 'POST',
+      });
+      console.log(res);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleLike = async (uri) => {
     await likePost(uri);
     await getComments(post?._id);
-  
   };
 
   const handleUpdatePost = () => {
@@ -72,9 +83,16 @@ const PostCard = ({
         handleUpdate={handleUpdatePost}
       />
 
-      <Link to={`/trip/post/${post._id}`}>
+      {showAll ? (
         <PostContent post={post} showAll={showAll} setShowAll={setShowAll} />
-      </Link>
+      ) : (
+        <Link
+          to={`/trip/post/${post._id}`}
+          onClick={() => incrementPostViewCount(post._id)}
+        >
+          <PostContent post={post} showAll={showAll} setShowAll={setShowAll} />
+        </Link>
+      )}
 
       <PostAction
         user={user}

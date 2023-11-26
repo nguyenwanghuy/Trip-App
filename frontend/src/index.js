@@ -6,16 +6,43 @@ import { Provider } from 'react-redux';
 import './index.css';
 import App from './App';
 import { store } from './redux/store';
-import { PostProvider } from './context/postContext';
+import i18n from 'i18next';
+import { useTranslation, initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
+import HttpApi from 'i18next-http-backend';
+
+i18n
+  .use(initReactI18next)
+  .use(LanguageDetector)
+  .use(HttpApi)
+  .init({
+    suportedLngs: ['en', 'vn'],
+    fallbackLng: 'en',
+    detection: {
+      order: [
+        'cookie',
+        'htmlTag',
+
+        'localStorage',
+        'sessionStorage',
+        'navigator',
+        'path',
+        'subdomain',
+      ],
+      caches: ['cookie'],
+    },
+    backend: {
+      loadPath: '/assets/locales/{{lng}}/translation.json',
+    },
+    react: { useSuspense: false },
+  });
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <Provider store={store}>
-    {/* <PostProvider> */}
     <BrowserRouter>
       <App />
     </BrowserRouter>
-    {/* </PostProvider> */}
   </Provider>,
 );
 

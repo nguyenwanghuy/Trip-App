@@ -1,8 +1,14 @@
-// Import necessary components and styles
 import React, { useEffect, useState } from 'react';
 import { NavBar, PostCard } from '../components';
-import { useParams } from 'react-router-dom';
-import { apiRequest, deletePost, fetchPosts, likePost } from '../utils';
+import { Link, useParams } from 'react-router-dom';
+import { BsPersonFillAdd } from 'react-icons/bs';
+import {
+  apiRequest,
+  deletePost,
+  fetchPosts,
+  likePost,
+  sendFriendRequest,
+} from '../utils';
 import { useSelector } from 'react-redux';
 
 const Search = () => {
@@ -10,6 +16,14 @@ const Search = () => {
   const { user } = useSelector((state) => state.user);
   const [searchUsersName, setSearchUsersName] = useState([]);
   const [searchUsersPost, setSearchUsersPost] = useState([]);
+
+  const handleFriendRequest = async (id) => {
+    try {
+      const res = await sendFriendRequest(user.token, id);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,17 +62,40 @@ const Search = () => {
           {!searchUsersName || searchUsersName.length === 0 ? (
             <p>No results found</p>
           ) : (
-            searchUsersName.map((user) => (
-              <div
-                key={user._id}
-                className='flex items-center gap-2 border px-2 py-2 border-[#66666690] rounded-lg'
-              >
-                <img
-                  src={user.avatar || 'default-avatar-url'}
-                  alt={`Avatar of ${user.username}`}
-                  className='w-[4rem] h-[4rem] rounded-full'
-                />
-                <p>{user.username}</p>
+            searchUsersName.map((searchedUser) => (
+              <div>
+                <div
+                  key={searchedUser._id}
+                  className='flex items-center justify-between border px-2 py-2 border-[#66666690] rounded-lg'
+                >
+                  <Link to={`/trip/user/${searchedUser._id}`}>
+                    <div className='flex items-center gap-2 px-2 py-2'>
+                      <img
+                        src={searchedUser.avatar}
+                        alt={`Avatar of ${searchedUser.username}`}
+                        className='w-[4rem] h-[4rem] rounded-full'
+                      />
+                      <p>{searchedUser.username}</p>
+                    </div>
+                  </Link>
+                  <div className='flex gap-1'>
+                    {user.friends &&
+                      !user.friends.some((f) => f._id === searchedUser._id) &&
+                      searchedUser._id !== user._id && (
+                        <button
+                          className='bg-[#0444a430] text-sm text-white p-1 rounded'
+                          onClick={() => {
+                            handleFriendRequest(searchedUser._id);
+                          }}
+                        >
+                          <BsPersonFillAdd
+                            size={20}
+                            className='text-[#0f52b6]'
+                          />
+                        </button>
+                      )}
+                  </div>
+                </div>
               </div>
             ))
           )}
