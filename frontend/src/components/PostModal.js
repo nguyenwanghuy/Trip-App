@@ -7,7 +7,7 @@ import { BiImages, BiSolidVideo } from 'react-icons/bi';
 import FriendListDropdown from './FriendListDropdown';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { Option } from 'antd/es/mentions';
+// import { Option } from 'antd/es/mentions';
 import { Upload } from 'antd';
 import ImgCrop from 'antd-img-crop';
 
@@ -25,6 +25,8 @@ const PostModal = ({
   const [selectedFriends, setSelectedFriends] = useState([]);
   const [content, setContent] = useState('');
   const [visibility, setVisibility] = useState('isPublic');
+  const [dateStart, setDateStart] = useState(null);
+  const [dateEnd, setDateEnd] = useState(null);
 
   const handleRemoveFile = (index) => {
     const updatedFiles = [...file];
@@ -32,7 +34,7 @@ const PostModal = ({
     setFile(updatedFiles);
   };
 
-  // const { Option } = Select;
+  const { Option } = Select;
 
   const onPreview = async (file) => {
     let src = file.url;
@@ -71,7 +73,13 @@ const PostModal = ({
       const data = await handleSubmit((formData) => {
         const cleanedContent = formData.content.replace(/<\/?p>/g, '');
         formData.content = cleanedContent;
-        handlePostSubmit(formData, selectedFriends, visibility);
+        handlePostSubmit(
+          formData,
+          selectedFriends,
+          visibility,
+          dateStart,
+          dateEnd,
+        );
       })();
       reset();
       setFile([]);
@@ -86,6 +94,10 @@ const PostModal = ({
   };
 
   const handleCancel = () => {
+    reset();
+    setFile([]);
+    setContent('');
+    setVisibility(null);
     setOpen(false);
   };
 
@@ -114,7 +126,7 @@ const PostModal = ({
         }}
         confirmLoading={confirmLoading}
         onCancel={handleCancel}
-        width='50%'
+        width={window.innerWidth < 768 ? '100%' : '50%'}
         centered={true}
       >
         <>
@@ -122,7 +134,7 @@ const PostModal = ({
             onSubmit={handleSubmit(handlePostSubmit)}
             className='bg-primary px-4 rounded-lg '
           >
-            <div className='w-full items-center gap-2 py-4 border-b border-[#66666645]'>
+            <div className='w-full items-center gap-2 py-4'>
               <div className='flex gap-4'>
                 <div>
                   <img
@@ -158,33 +170,40 @@ const PostModal = ({
                   </div>
                 </div>
               </div>
+              <div className='flex gap-4'>
+                <input
+                  type='date'
+                  placeholder='Start Date'
+                  {...register('dateStart', {
+                    required: 'Start Date is required',
+                  })}
+                  onChange={(e) => {
+                    setValue('dateStart', e.target.value, {
+                      shouldValidate: true,
+                    });
+                    setDateStart(e.target.value);
+                  }}
+                  className='w-full py-2 px-4 rounded-md mt-2 border border-ascent-2'
+                />
 
-              <TextInput
-                styles='w-full rounded-full py-5 border-none '
-                placeholder='Description...'
-                name='description'
-                register={register('description', {
-                  required: 'Write something about post',
-                })}
-                error={errors.description ? errors.description.message : ''}
-              />
-              <div className='w-full border-t border-[#66666645]'></div>
-              <ReactQuill
-                theme='snow'
-                value={content}
-                onChange={(value) => {
-                  setValue('content', value);
-                  setContent(value);
-                }}
-                name='content'
-              />
-              <div className='w-full border-t border-[#66666645]'></div>
-
-              <ul className='flex my-4'>
+                <input
+                  type='date'
+                  placeholder='End Date'
+                  {...register('dateEnd', { required: 'End Date is required' })}
+                  onChange={(e) => {
+                    setValue('dateEnd', e.target.value, {
+                      shouldValidate: true,
+                    });
+                    setDateEnd(e.target.value);
+                  }}
+                  className='w-full py-2 px-4 rounded-md mt-2 border border-ascent-2'
+                />
+              </div>
+              <ul className='flex my-4 gap-4'>
                 {file.map((selectedFile, index) => (
                   <li key={index} className='relative'>
                     <img
-                      className='h-12 w-12 '
+                      className='h-20 w-20'
                       src={URL.createObjectURL(selectedFile)}
                       alt={`Selected Image ${index}`}
                     />
@@ -193,11 +212,40 @@ const PostModal = ({
                       className='absolute top-0 right-0 bg-red-500 text-white rounded-full p-1'
                       onClick={() => handleRemoveFile(index)}
                     >
-                      X
+                      x
                     </button>
                   </li>
                 ))}
               </ul>
+              <input
+                className='w-full py-3 my-2 border-b border-[#66666645] focus:outline-none'
+                type='text'
+                placeholder='Nhập địa điểm'
+                {...register('location')}
+              />
+              <input
+                className='w-full py-3 my-2 border-b border-[#66666645] focus:outline-none'
+                type='text'
+                placeholder='Nhập tiêu đề...'
+                {...register('description', {
+                  required: 'Write something about post',
+                })}
+              />
+              {errors.description && (
+                <span className='text-sm text-red-500'>
+                  {errors.description.message}
+                </span>
+              )}
+              <ReactQuill
+                theme='snow'
+                value={content}
+                onChange={(value) => {
+                  setValue('content', value);
+                  setContent(value);
+                }}
+                name='content'
+                className='h-20 mb-11'
+              />
             </div>
 
             {errMsg?.message && (
@@ -213,7 +261,7 @@ const PostModal = ({
               </span>
             )}
 
-            <div className='flex items-center justify-between py-4'>
+            <div className='border border-[#66666645] px-2 py-2 rounded-lg'>
               <label
                 htmlFor='imgUpload'
                 className='flex items-center gap-1 text-base text-ascent-2 hover:text-ascent-1 cursor-pointer'
@@ -227,53 +275,14 @@ const PostModal = ({
                   accept='*'
                   multiple
                 />
+                <div className='flex items-center justify-between w-full'>
+                  <div>Add to your post: </div>
 
-                <BiImages />
-                <span>Image</span>
-              </label>
-
-              {/* <ImgCrop rotationSlider>
-                <Upload
-                  action='http://api.cloudinary.com/v1_1/dmlc8hjzu/image/upload/'
-                  listType='picture-card'
-                  fileList={file}
-                  onChange={handleFileChange}
-                  onPreview={(file) => onPreview(file)}
-                >
-                  {file.length < 5 && '+ Upload'}
-                </Upload>
-              </ImgCrop> */}
-
-              <label
-                className='flex items-center gap-1 text-base text-ascent-2 hover:text-ascent-1 cursor-pointer'
-                htmlFor='videoUpload'
-              >
-                <input
-                  type='file'
-                  data-max-size='5120'
-                  onChange={(e) => setFile(e.target.files[0])}
-                  className='hidden'
-                  id='videoUpload'
-                  accept='.mp4, .wav'
-                />
-                <BiSolidVideo />
-                <span>Video</span>
-              </label>
-
-              <label
-                className='flex items-center gap-1 text-base text-ascent-2 hover:text-ascent-1 cursor-pointer'
-                htmlFor='vgifUpload'
-              >
-                <input
-                  type='file'
-                  data-max-size='5120'
-                  onChange={(e) => setFile(e.target.files[0])}
-                  className='hidden'
-                  id='vgifUpload'
-                  accept='.gif'
-                />
-                <BsFiletypeGif />
-                <span>Gif</span>
+                  <span className='flex gap-3'>
+                    <BiImages className='h-[1.5rem] w-[1.5rem]' />
+                    <span>Image/video</span>
+                  </span>
+                </div>
               </label>
             </div>
           </form>

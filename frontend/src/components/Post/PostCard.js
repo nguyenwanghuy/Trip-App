@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { apiRequest } from '../../utils';
 import { Comment, PostAction, PostContent, PostHeader } from '../index';
-import { io } from 'socket.io-client';
 import UpdatePostModal from '../UpdatePostModal ';
 import { Link } from 'react-router-dom';
 
@@ -35,7 +34,6 @@ const PostCard = ({
   const [showComments, setShowComments] = useState(0);
   const [editComment, setEditComment] = useState(null);
   const [isEditingComment, setIsEditingComment] = useState(false);
-  const [_post, setPost] = useState(post);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const getComments = async () => {
     setReplyComments(0);
@@ -50,44 +48,22 @@ const PostCard = ({
     }
   };
 
-  // const socket = io('http://localhost:8001');
-  // useEffect(() => {
-  //   socket.on('like', (data) => {
-  //     setPost((prev) => {
-  //       if (prev && prev._id === data.postId) {
-  //         const likes = prev.likes ?? [];
-
-  //         if (likes.includes(data.from)) {
-  //           return {
-  //             ...prev,
-  //             likes: likes.filter((id) => id !== data.from),
-  //           };
-  //         } else {
-  //           return {
-  //             ...prev,
-  //             likes: [...likes, data.from],
-  //           };
-  //         }
-  //       }
-  //       return prev;
-  //     });
-  //   });
-  //   return () => {
-  //     socket.disconnect();
-  //   };
-  // }, []);
-
-  // const userId = user?._id;
+  const incrementPostViewCount = async (postId) => {
+    try {
+      const res = await apiRequest({
+        url: `/trip/post/view/${postId}`,
+        token: user.token,
+        method: 'POST',
+      });
+      console.log(res);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleLike = async (uri) => {
     await likePost(uri);
     await getComments(post?._id);
-    // if (userId) {
-    //   const ownerId = _post.user;
-    //   if (ownerId) {
-    //     socket.emit('like', { postId: post._id, from: userId, to: ownerId });
-    //   }
-    // }
   };
 
   const handleUpdatePost = () => {
@@ -107,14 +83,20 @@ const PostCard = ({
         handleUpdate={handleUpdatePost}
       />
 
-      <Link to={`/trip/post/${post._id}`}>
+      {showAll ? (
         <PostContent post={post} showAll={showAll} setShowAll={setShowAll} />
-      </Link>
+      ) : (
+        <Link
+          to={`/trip/post/${post._id}`}
+          onClick={() => incrementPostViewCount(post._id)}
+        >
+          <PostContent post={post} showAll={showAll} setShowAll={setShowAll} />
+        </Link>
+      )}
 
       <PostAction
         user={user}
         post={post}
-        _post={_post}
         showComments={showComments}
         setShowComments={setShowComments}
         getComments={getComments}

@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { Button, Loading, TextInput } from '../components';
 import { BsEye, BsEyeSlash } from 'react-icons/bs';
 import { apiRequest } from '../utils';
+import { userLogin } from '../redux/userSlice';
 
 const Register = () => {
   const [show, setShow] = useState(false);
   const [confirmShow, setConfirmShow] = useState(false);
   const [errMsg, setErrMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const dispatch = useDispatch();
 
@@ -29,18 +31,47 @@ const Register = () => {
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
-      const res = await apiRequest({
+      const registerRes = await apiRequest({
         url: '/auth/register',
         data: data,
         method: 'POST',
       });
-      if (res?.status === 'failed') {
-        setErrMsg(res);
+
+      if (registerRes?.status === 'failed') {
+        setErrMsg(registerRes);
+        setIsSubmitting(false);
+        return;
       }
+
+      const loginRes = await apiRequest({
+        url: '/auth/login',
+        data: { username: data.username, password: data.password },
+        method: 'POST',
+      });
+
+      if (loginRes?.status === 'failed') {
+        setErrMsg(loginRes.message);
+      } else {
+        const token = loginRes.token;
+        const profileResponse = await apiRequest({
+          url: '/auth/me',
+          token: token,
+          method: 'GET',
+        });
+        if (profileResponse) {
+          const payload = {
+            token,
+            ...profileResponse,
+          };
+
+          dispatch(userLogin(payload));
+          navigate('/');
+        }
+      }
+
       setIsSubmitting(false);
-      window.location.replace('/login');
     } catch (error) {
-      console.log(error);
+      console.error(error);
       setIsSubmitting(false);
     }
   };

@@ -40,30 +40,72 @@ const getAllPosts = async (req, res) => {
   }
 };
 // create a new post
+const PostVisibility = {
+  PRIVATE: 'private',
+  PUBLIC: 'public',
+  FRIENDS: 'friends',
+};
+
 const createPost = async (req, res) => {
-  const { content, description, image } = req.body;
-  const { id } = req.user;
-  console.log(id);
-  const currentUser = await UserModel.findById(id);
+  try {
+    const {
+      content,
+      description,
+      image,
+      viewers,
+      visibility,
+      dateStart,
+      dateEnd,
+    } = req.body;
+    const { id } = req.user;
 
-  // console.log(currentUser)
-  if (!currentUser) {
-    res.status = 400;
-    throw new Error('User not found');
+    const currentUser = await UserModel.findById(id).select('friends');
+    if (!currentUser) {
+      return res.status(400).json({ message: 'User not found' });
+    }
+
+    let postViewers = [];
+
+    switch (visibility) {
+      case PostVisibility.PRIVATE:
+        postViewers = [id];
+        break;
+      case PostVisibility.PUBLIC:
+        const allUsers = await UserModel.find().select('_id');
+        postViewers = allUsers.map((user) => user._id);
+        break;
+      case PostVisibility.FRIENDS:
+        postViewers = [
+          id,
+          ...currentUser.friends.filter((friend) =>
+            viewers.includes(String(friend)),
+          ),
+        ];
+        break;
+      default:
+        throw new Error('Invalid visibility option');
+    }
+
+    const newPost = new PostModel({
+      content,
+      description,
+      image,
+      dateStart,
+      dateEnd,
+      user: id,
+      viewers: postViewers,
+      visibility,
+    });
+
+    await newPost.save();
+
+    return res.status(201).json({
+      data: newPost,
+      message: 'Success',
+    });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
   }
-  const newPost = new PostModel({
-    content,
-    description,
-    image,
-    user: id,
-  });
-
-  //save the new post
-  await newPost.save();
-  res.status(201).json({
-    data: newPost,
-    message: 'Create new post successfully',
-  });
 };
 // upload image
 const uploadsImage = async (req, res) => {
@@ -137,29 +179,7 @@ const getPost = async (req, res) => {
     });
   }
 };
-// update post by id
-const updatePost = async (req, res) => {
-  try {
-    const { content, description, image } = req.body;
-    const updatePost = await PostModel.findOneAndUpdate(
-      { _id: req.params.id },
-      {
-        content,
-        description,
-        image,
-      },
-      {
-        new: true,
-      },
-    );
-    return res.json({
-      message: 'Update successfully',
-      data: updatePost,
-    });
-  } catch (error) {
-    res.status(500).send(error);
-  }
-};
+
 //delete post by id
 const deletePost = async (req, res) => {
   try {
@@ -235,14 +255,9 @@ const checkViewFriend = async (req, res) => {
   });
 };
 
-const PostVisibility = {
-  PRIVATE: 'private',
-  PUBLIC: 'public',
-  FRIENDS: 'friends',
-};
-
-const checkViewPrivate = async (req, res) => {
+const updatePost = async (req, res) => {
   try {
+    const { id } = req.user;
     const {
       content,
       description,
@@ -251,12 +266,15 @@ const checkViewPrivate = async (req, res) => {
       visibility,
       dateStart,
       dateEnd,
+      location,
     } = req.body;
-    const { id } = req.user;
 
     const currentUser = await UserModel.findById(id).select('friends');
-    if (!currentUser) {
-      return res.status(400).json({ message: 'User not found' });
+
+    const oldPost = await PostModel.findByIdAndUpdate(req.params.id);
+
+    if (!oldPost) {
+      return res.status(404).json({ message: 'Post not found' });
     }
 
     let postViewers = [];
@@ -281,25 +299,25 @@ const checkViewPrivate = async (req, res) => {
         throw new Error('Invalid visibility option');
     }
 
-    const newPost = new PostModel({
-      content,
-      description,
-      image,
-      dateStart,
-      dateEnd,
-      user: id,
-      viewers: postViewers,
-      visibility,
-    });
+    oldPost.content = content;
+    oldPost.description = description;
+    oldPost.image = image;
+    oldPost.viewers = postViewers;
+    oldPost.visibility = visibility;
+    oldPost.dateStart = dateStart;
+    oldPost.dateEnd = dateEnd;
+    oldPost.location = location;
 
-    await newPost.save();
+    await oldPost.save();
 
-    return res.status(201).json({
-      data: newPost,
-      message: 'Success',
+    return res.json({
+      success: true,
+      data: oldPost,
+      message: 'Update successful',
     });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    console.error('Error updating post:', error);
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -338,6 +356,32 @@ const uploadVideo = async (req, res) => {
     res.status(500).json({ error: 'upload failed' });
   }
 };
+
+const viewCount = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const post = await PostModel.findByIdAndUpdate(
+      id,
+      { $inc: { views: 1 } },
+      { new: true },
+    );
+
+    if (!post) {
+      return res.status(404).json({
+        message: 'Post not found',
+      });
+    }
+
+    res.status(200).json({
+      data: post,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
 const PostCtrl = {
   getAllPosts,
   createPost,
@@ -347,8 +391,8 @@ const PostCtrl = {
   uploadsImage,
   likePost,
   checkViewFriend,
-  checkViewPrivate,
   getPostById,
   uploadVideo,
+  viewCount,
 };
 export default PostCtrl;

@@ -9,7 +9,9 @@ import AlbumInfo from './ImageDetails/AlbumInfo';
 
 const { TabPane } = Tabs;
 
-const ImagesProfile = ({ user, UserId, userInfo }) => {
+const ImagesProfile = ({ UserId, userInfo }) => {
+  const { user } = useSelector((state) => state.user);
+
   const { albums } = useSelector((state) => state.album);
   console.log(albums);
   const { handleLikePost, fetchAlbum, handleDeletePost } = UseFunction();
@@ -43,11 +45,7 @@ const ImagesProfile = ({ user, UserId, userInfo }) => {
     ? albums.filter((album) => album.user._id === userInfo._id)
     : [];
 
-  console.log(userAlbums);
-
-  const flattenedImages = posts.flatMap((post) =>
-    post.image.flatMap((imageGroup) => [...imageGroup]),
-  );
+  const flattenedImages = posts.flatMap((post) => post.image);
 
   const handleAlbumClick = (albumId) => {
     console.log(albumId);

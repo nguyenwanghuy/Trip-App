@@ -35,46 +35,59 @@ export const getUser = async (req, res) => {
   }
 };
 
-export const friendRequest = async (req, res, next) => {
+export const friendRequest = async (req, res) => {
   try {
-    const id = req.user.id;
-
     const { requestTo } = req.body;
+    const requestFrom = req.user.id;
 
-    const requestExist = await FriendRequest.findOne({
-      requestFrom: id,
-      requestTo,
+    const existingRequest = await FriendRequest.findOne({
+      $or: [
+        { requestFrom, requestTo },
+        { requestFrom: requestTo, requestTo: requestFrom },
+      ],
     });
 
-    if (requestExist) {
-      next('Friend Request already sent.');
-      return;
+    if (existingRequest) {
+      await FriendRequest.findByIdAndDelete(existingRequest._id);
     }
 
-    const accountExist = await FriendRequest.findOne({
-      requestFrom: requestTo,
-      requestTo: id,
+    const existingFriendship = await FriendRequest.findOne({
+      $or: [
+        {
+          requestFrom: requestTo,
+          requestTo: requestFrom,
+          requestStatus: 'Accepted',
+        },
+        {
+          requestFrom: requestFrom,
+          requestTo: requestTo,
+          requestStatus: 'Accepted',
+        },
+      ],
     });
 
-    if (accountExist) {
-      next('Friend Request already sent.');
-      return;
+    if (existingFriendship) {
+      return res.status(409).json({
+        success: false,
+        message: 'Already friends.',
+      });
     }
 
-    const newRes = await FriendRequest.create({
+    const newRequest = await FriendRequest.create({
       requestTo,
-      requestFrom: id,
+      requestFrom,
     });
 
     res.status(201).json({
       success: true,
       message: 'Friend Request sent successfully',
+      data: newRequest,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).json({
-      message: 'auth error',
       success: false,
+      message: 'Internal Server Error',
       error: error.message,
     });
   }
@@ -84,28 +97,26 @@ export const getFriendRequest = async (req, res) => {
   try {
     const id = req.user.id;
 
-    const request = await FriendRequest.find({
+    const requests = await FriendRequest.find({
       requestTo: id,
       requestStatus: 'Pending',
     })
       .populate({
         path: 'requestFrom',
-        select: 'username avatar -password',
+        select: 'username avatar',
       })
       .limit(10)
-      .sort({
-        _id: -1,
-      });
+      .sort({ _id: -1 });
 
     res.status(200).json({
       success: true,
-      data: request,
+      data: requests,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).json({
-      message: 'auth error',
       success: false,
+      message: 'Internal Server Error',
       error: error.message,
     });
   }
@@ -155,3 +166,58 @@ export const acceptRequest = async (req, res, next) => {
     });
   }
 };
+
+// export const deleteFriend = async (req, res) => {
+//   try {
+//     const id = req.user.id;
+//     const { friendId } = req.body;
+
+//     // Check if the friendId is valid
+//     if (!friendId) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'FriendId is required for deletion.',
+//       });
+//     }
+
+//     // Find the user and friend documents
+//     const user = await UserModel.findById(id);
+//     const friend = await UserModel.findById(friendId);
+
+//     // Check if the friend is not found
+//     if (!friend) {
+//       return res.status(404).json({
+//         success: false,
+//         message: 'Friend not found.',
+//       });
+//     }
+
+//     // Remove friendId from user's friends
+//     user.friends = user.friends.filter((f) => f.toString() !== friendId);
+//     await user.save();
+
+//     // Remove userId from friend's friends
+//     friend.friends = friend.friends.filter((f) => f.toString() !== id);
+//     await friend.save();
+
+//     // Delete any friend request records
+//     await FriendRequest.deleteMany({
+//       $or: [
+//         { requestFrom: id, requestTo: friendId },
+//         { requestFrom: friendId, requestTo: id },
+//       ],
+//     });
+
+//     res.status(200).json({
+//       success: true,
+//       message: 'Friend deleted successfully',
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       success: false,
+//       message: 'Internal Server Error',
+//       error: error.message,
+//     });
+//   }
+// };

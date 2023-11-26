@@ -15,5 +15,6 @@ router.post('/get-user/:id?', getUser);
 router.post('/friend-request', friendRequest);
 router.post('/get-friend-request', getFriendRequest);
 router.post('/accept-request', acceptRequest);
+// router.delete('/delete-friend', deleteFriend);
 
 export default router;

@@ -20,7 +20,7 @@ router.put('/:id', verifyTokenPost, PostCtrl.updatePost); // update post
 router.delete('/:id', verifyTokenPost, PostCtrl.deletePost); // delete post
 router.post('/image', uploadFile.array('image', 5), PostCtrl.uploadsImage); // upload image tối đa 5 ảnh
 router.post('/viewFriend', PostCtrl.checkViewFriend); // chọn bạn để được xem
-router.post('/viewPrivate', PostCtrl.checkViewPrivate); // chọn xem 1 mình
-router.post('/video', uploadFile.single('video') , PostCtrl.uploadVideo)
+router.post('/video', uploadFile.single('video'), PostCtrl.uploadVideo);
+router.post('/view/:id', authMiddleware, PostCtrl.viewCount);
 
 export default router;

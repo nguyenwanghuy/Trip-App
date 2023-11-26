@@ -12,6 +12,7 @@ import {
   deletePost,
   fetchPosts,
   handleAvatarUpload,
+  handleFileUpload,
   likePost,
 } from '../utils';
 import PostProfile from '../components/details/PostProfile';
@@ -29,7 +30,7 @@ const Profile = () => {
   const [userInfo, setUserInfo] = useState({});
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [file, setFile] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [activeComponent, setActiveComponent] = useState('posts');
 
@@ -40,6 +41,7 @@ const Profile = () => {
         token: user.token,
         method: 'GET',
       });
+      // console.log(res);
       setUserInfo(res.data);
       setLoading(false);
     } catch (error) {
@@ -47,43 +49,9 @@ const Profile = () => {
     }
   };
 
-  // const handleUpload = async () => {
-  //   if (selectedFile) {
-  //     const formData = new FormData();
-  //     formData.append('file', selectedFile);
-
-  //     try {
-  //       const response = await axios.post(
-  //         'http://localhost:8001/trip/user/upload-avatar',
-  //         formData,
-  //         {
-  //           headers: {
-  //             'x-access-token': user.token,
-  //             'Content-Type': 'multipart/form-data',
-  //           },
-  //         },
-  //       );
-
-  //       if (response.data.message === 'Uploading avatar successfully') {
-  //         setUserInfo((prevUserInfo) => ({
-  //           ...prevUserInfo,
-  //           avatar: response.data.avatar,
-  //         }));
-  //         setModalVisible(false);
-  //       } else {
-  //         console.error('Avatar upload failed');
-  //       }
-  //     } catch (error) {
-  //       console.error(error);
-  //     }
-  //   }
-  // };
-
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-    }
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
   };
 
   const handleLikePost = async (uri) => {
@@ -101,62 +69,53 @@ const Profile = () => {
   };
 
   const handleOk = async () => {
-    if (selectedFile) {
-      try {
-        const avatarUrl = await handleAvatarUpload({
-          file: selectedFile,
+    try {
+      if (file) {
+        setUploading(true);
+
+        const uri = await handleFileUpload(file);
+
+        await apiRequest({
+          url: `/user/upload-avatar`,
           token: user.token,
+          method: 'PUT',
+          data: { avatar: uri },
         });
 
-        console.log('Avatar URL:', avatarUrl);
+        await fetchUserData();
 
-        if (avatarUrl) {
-          setUserInfo((prevUserInfo) => ({
-            ...prevUserInfo,
-            avatar: avatarUrl,
-          }));
-
-          setModalVisible(false);
-          fetchUserData();
-        }
-      } catch (error) {
-        console.error('Avatar upload failed', error);
+        setFile(null);
       }
+    } catch (error) {
+      console.error('Error updating avatar:', error);
+    } finally {
+      setUploading(false);
+      setModalVisible(false);
     }
   };
-
   const handleCancel = () => {
     setModalVisible(false);
-  };
-
-  const renderContent = () => {
-    switch (activeComponent) {
-      case 'introduce':
-        return userInfo ? (
-          <IntroduceProfile userInfo={userInfo} fetchUserData={fetchUserData} />
-        ) : null;
-      case 'friends':
-        return userInfo ? <FriendsProfile userInfo={userInfo} /> : null;
-      case 'images':
-        return userInfo ? (
-          <ImagesProfile user={user} UserId={id} userInfo={userInfo} />
-        ) : null;
-      default:
-        return <PostProfile user={user} UserId={id} userInfo={userInfo} />;
-    }
-  };
-
-  const handleTabChange = (tabKey) => {
-    setActiveComponent(tabKey);
-    localStorage.setItem('activeTab', tabKey);
   };
 
   useEffect(() => {
     setLoading(true);
     fetchUserData();
-    const storedActiveTab = localStorage.getItem('activeTab');
-    setActiveComponent(storedActiveTab || 'posts');
   }, [id]);
+
+  const renderContent = () => {
+    switch (activeComponent) {
+      case 'introduce':
+        return (
+          <IntroduceProfile userInfo={userInfo} fetchUserData={fetchUserData} />
+        );
+      case 'friends':
+        return <FriendsProfile userInfo={userInfo} />;
+      case 'images':
+        return <ImagesProfile userInfo={userInfo} />;
+      default:
+        return <PostProfile user={user} UserId={id} userInfo={userInfo} />;
+    }
+  };
 
   return (
     <div>
@@ -193,19 +152,19 @@ const Profile = () => {
 
           <div className='absolute bottom-[-1.5rem] flex'>
             <Button
-              onClick={() => handleTabChange('posts')}
+              onClick={() => setActiveComponent('posts')}
               className='bg-primary rounded-tr-3xl rounded-tl-none rounded-bl-3xl rounded-br-none text-ascent-1 text-sm text-center flex items-center justify-center px-10 py-4 m-2 shadow-inner'
             >
               Post
             </Button>
             <Button
-              onClick={() => handleTabChange('introduce')}
+              onClick={() => setActiveComponent('introduce')}
               className='bg-primary rounded-tr-3xl rounded-tl-none rounded-bl-3xl rounded-br-none text-ascent-1 text-sm text-center flex items-center justify-center px-10 py-4 m-2 shadow-inner'
             >
               Giới thiệu
             </Button>
             <Button
-              onClick={() => handleTabChange('friends')}
+              onClick={() => setActiveComponent('friends')}
               className='bg-primary rounded-tr-3xl rounded-tl-none rounded-bl-3xl rounded-br-none text-ascent-1 text-sm text-center flex items-center justify-center px-10 py-4 m-2 shadow-inner '
             >
               Bạn bè

@@ -5,6 +5,9 @@ const PostContent = ({ post, showAll, setShowAll }) => {
   return (
     <div>
       <div className='text-ascent-2'>
+        <div>
+          Từ {post.dateStart} đến {post.dateEnd} Tại {post.location}
+        </div>
         <PostImage post={post} />
 
         <div className='font-bold text-left'>

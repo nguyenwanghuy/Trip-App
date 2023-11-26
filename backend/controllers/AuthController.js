@@ -2,6 +2,8 @@ import jwt, { decode } from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import UserModel from '../models/user.model.js';
 import RefreshTokenModel from '../models/refreshTokenModel.js';
+import nodemailer from 'nodemailer';
+import crypto from 'crypto';
 const login = async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -34,7 +36,7 @@ const login = async (req, res) => {
       password: existingUser.password,
     };
     const token = jwt.sign(jwtPayload, process.env.SECRET_KEY, {
-      expiresIn: '7s',
+      expiresIn: '7d',
     });
     const refreshToken = jwt.sign(
       jwtPayload,
@@ -262,6 +264,45 @@ const logout = async (req, res) => {
   res.status(200).json({
     message: 'Logged out',
   });
+};
+
+const forgetPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await UserModel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 3600000;
+
+    await user.save();
+
+    const transporter = nodemailer.createTransport({});
+
+    const mailOptions = {
+      from: 'your-email@example.com',
+      to: email,
+      subject: 'Password Reset',
+      text: `Click on the following link to reset your password: ${process.env.CLIENT_URL}/reset-password/${resetToken}`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log(error);
+        return res.status(500).json({ message: 'Failed to send reset email' });
+      }
+      console.log(`Email sent: ${info.response}`);
+      res.status(200).json({ message: 'Reset email sent successfully' });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 };
 const AuthCtrl = {
   login,

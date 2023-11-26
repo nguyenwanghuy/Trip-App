@@ -33,7 +33,7 @@ const ProfileCard = ({ user }) => {
             />
             <div className='flex flex-col justify-center'>
               <p className='text-lg font-medium text-ascent-1'>
-                {user.username}
+                {user.username} 
               </p>
               {user.userInfo?.profession && (
                 <span className='text-ascent-2'>{user?.profession}</span>

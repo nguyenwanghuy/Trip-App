@@ -18,6 +18,7 @@ import { useForm } from 'react-hook-form';
 import { BsPersonFillAdd } from 'react-icons/bs';
 import {
   apiRequest,
+  fetchPostsByPage,
   getUserInfo,
   handleFileUpload,
   sendFriendRequest,
@@ -27,10 +28,14 @@ import { userLogin } from '../redux/userSlice';
 import UpdatePostModal from '../components/UpdatePostModal ';
 import FriendRequests from '../components/FriendRequestCard';
 import SuggestedFriends from '../components/SuggestedFriends';
+import { Card, Pagination } from 'antd';
+import { SetPosts } from '../redux/postSlice';
 
 const Home = () => {
   const { user } = useSelector((state) => state.user);
   const { posts } = useSelector((state) => state.posts);
+  const { albums } = useSelector((state) => state.album);
+
   const [friendRequest, setFriendRequest] = useState([]);
   const [suggestedFriends, setSuggestedFriends] = useState([]);
   const [errMsg, setErrMsg] = useState('');
@@ -40,6 +45,14 @@ const Home = () => {
   const [show, setShow] = useState(true);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const { handleLikePost, fetchPost, handleDeletePost } = UseFunction();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    fetchPostsByPage(user?.token, dispatch, newPage, itemsPerPage);
+  };
 
   const dispatch = useDispatch();
 
@@ -51,18 +64,22 @@ const Home = () => {
   } = useForm();
   //o
   const handleFileChange = (e) => {
-    const selectedFiles = e.target.files;
-    console.log([...file, ...selectedFiles]);
-    setFile([...file, ...selectedFiles]);
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
   };
-
   const PostVisibility = {
     PRIVATE: 'private',
     PUBLIC: 'public',
     FRIENDS: 'friends',
   };
   //1
-  const handlePostSubmit = async (data, selectedFriends, visibility) => {
+  const handlePostSubmit = async (
+    data,
+    selectedFriends,
+    visibility,
+    dateStart,
+    dateEnd,
+  ) => {
     setPosting(true);
     setErrMsg('');
 
@@ -84,18 +101,16 @@ const Home = () => {
             ? PostVisibility.PUBLIC
             : PostVisibility.FRIENDS,
         viewers: selectedFriends,
+        dateStart,
+        dateEnd,
       };
 
-      console.log(newData);
-
       const res = await apiRequest({
-        url: '/post/viewPrivate',
+        url: '/post/',
         token: user?.token,
         data: newData,
         method: 'POST',
       });
-
-      console.log(res);
 
       if (res?.status === 'failed') {
         setErrMsg(res.message);
@@ -103,11 +118,14 @@ const Home = () => {
         reset({
           description: '',
           content: '',
+          location: '',
         });
         setFile([]);
         setErrMsg('');
         await fetchPost();
       }
+
+      console.log(res);
     } catch (error) {
       console.error('Error submitting post:', error);
       setErrMsg('An error occurred while submitting the post.');
@@ -115,20 +133,52 @@ const Home = () => {
       setPosting(false);
     }
   };
-
-  const updatePost = async (postId, newData) => {
+  const updatePost = async (
+    postId,
+    data,
+    selectedFriends,
+    visibility,
+    dateStart,
+    dateEnd,
+    updatedLocation,
+    updatedImage,
+  ) => {
     try {
+      const updatedImage = await Promise.all(
+        file.map(async (file) => {
+          const uri = await handleFileUpload(file);
+          return uri;
+        }),
+      );
+
+      const newData = {
+        ...data,
+        visibility:
+          visibility === 'isPrivate'
+            ? PostVisibility.PRIVATE
+            : visibility === 'isPublic'
+            ? PostVisibility.PUBLIC
+            : PostVisibility.FRIENDS,
+        image: updatedImage,
+        viewers: selectedFriends,
+        dateStart,
+        dateEnd,
+        location: updatedLocation,
+      };
+
+      console.log(newData);
+
       const res = await apiRequest({
         url: `/post/${postId}`,
         token: user?.token,
         data: newData,
         method: 'PUT',
       });
+      console.log(res);
 
       if (res?.status === 'failed') {
         console.error('Post update failed:', res.message);
       } else {
-        console.log('Post updated successfully:', res.data);
         await fetchPost();
       }
     } catch (error) {
@@ -166,7 +216,6 @@ const Home = () => {
         token: user.token,
         method: 'POST',
       });
-
       setFriendRequest(res.data);
     } catch (error) {
       console.error(error);
@@ -198,38 +247,6 @@ const Home = () => {
     }
   };
 
-  // refresh token
-  const refreshToken = async () => {
-    try {
-      const res = axios.post('http://localhost:8001/trip/auth/refresh', {
-        withCredentials: true,
-      });
-      return res.data;
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  let axiosJWT = axios.create();
-  axiosJWT.interceptors.request.use(
-    async (config) => {
-      let date = new Date();
-      const decodedToken = jwtDecode(user?.token);
-      if (decodedToken.exp < date.getTime() / 1000) {
-        const data = await refreshToken();
-        const refreshUser = {
-          ...user,
-          token: data.token,
-        };
-        dispatch(userLogin(refreshUser));
-        config.headers['token'] = data.token;
-      }
-      return config;
-    },
-    (err) => {
-      return Promise.reject(err);
-    },
-  );
-
   useEffect(() => {
     fetchPost();
     fetchSuggestedRequests();
@@ -238,6 +255,19 @@ const Home = () => {
     handleFetchFriendRequest();
     getUser();
   }, []);
+  useEffect(() => {
+    const fetchData = async () => {
+      const res = await apiRequest({
+        url: `/post?page=${currentPage}&pageSize=${itemsPerPage}`,
+        token: user?.token,
+        method: 'GET',
+      });
+      dispatch(SetPosts(res?.data));
+      setTotalPages(res?.pagination.totalPages);
+    };
+
+    fetchData();
+  }, [currentPage, itemsPerPage, dispatch, setTotalPages, user?.token]);
 
   return (
     <div className='w-full px-0 lg:px-10 2xl:px-20 bg-bgColor lg:rounded-lg h-screen pb-10 overflow-hidden'>
@@ -281,6 +311,12 @@ const Home = () => {
                     file={file}
                   />
                 ))}
+
+              <Pagination
+                current={currentPage}
+                total={totalPages * itemsPerPage}
+                onChange={handlePageChange}
+              />
             </>
           ) : (
             <div className='flex w-full h-full items-center justify-center'>
@@ -291,11 +327,15 @@ const Home = () => {
 
         {updateModalOpen && (
           <UpdatePostModal
+            user={user}
+            errMsg={errMsg}
             post={selectedPost}
             updatePost={updatePost}
             onClose={() => setUpdateModalOpen(false)}
             initialFile={selectedPost.image[0]}
             initialDescription={selectedPost.description}
+            setFile={setFile}
+            file={file}
           />
         )}
 

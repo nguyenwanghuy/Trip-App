@@ -67,7 +67,6 @@ const AlbumEdit = () => {
     setErrMsg('');
 
     try {
-      // Filter out new files from the file state
       const existingFiles = file.filter((f) => f.file instanceof File);
       const uploadedFiles = await Promise.all(
         existingFiles.map(async (file) => {
@@ -76,7 +75,6 @@ const AlbumEdit = () => {
         }),
       );
 
-      // Combine existing and uploaded files
       const updatedImages = [
         ...(existingData ? existingData.images : []),
         ...uploadedFiles.map((url, index) => ({
@@ -85,7 +83,6 @@ const AlbumEdit = () => {
         })),
       ];
 
-      // Remove deleted images
       const finalImages = updatedImages.filter(
         (image) => !fileToDelete.includes(image.url),
       );

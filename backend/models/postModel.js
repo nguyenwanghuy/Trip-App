@@ -41,10 +41,17 @@ const PostSchema = new mongoose.Schema(
       default: 'public',
     },
     dateStart: {
-      type: Date,
+      type: String,
     },
     dateEnd: {
-      type: Date,
+      type: String,
+    },
+    location: {
+      type: String,
+    },
+    views: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true },
